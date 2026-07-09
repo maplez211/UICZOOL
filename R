@@ -1,0 +1,409 @@
+-- UI Script H4X do 2knw | Locked Up Panel
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local Window = redzlib:MakeWindow({
+  Title = "H4X do 2knw | Locked Up Panel",
+  SubTitle = "by 2knw | Version 0.1.7",
+  SaveFolder = "LockedUp_Hub"
+})
+
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://121222457209872", BackgroundTransparency = 1 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
+
+-- ============ TABS ============
+local MainTab = Window:MakeTab({"Main", "settings"})
+local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
+local VisualsTab = Window:MakeTab({"Visuals", "eye"})
+local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
+local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+
+Window:SelectTab(MainTab)
+
+-- ============ MAIN TAB ============
+MainTab:AddDiscordInvite({
+    Name = "H4X do 2knw",
+    Description = "Join our Discord server for updates and support!",
+    Logo = "rbxassetid://121222457209872",
+    Invite = "https://discord.gg/YqVunAY8J2",  
+})
+
+local MainSection = MainTab:AddSection({"Player"})
+
+MainTab:AddSlider({
+  Name = "Player FOV",
+  Description = "Changes your field of view (60-120)",
+  Min = 60,
+  Max = 120,
+  Increase = 1,
+  Default = 70,
+  Callback = function(Value)
+    PLAYER_FOV = Value
+    workspace.CurrentCamera.FieldOfView = Value
+  end
+})
+
+MainTab:AddSlider({
+  Name = "Spinbot",
+  Description = "Spins your character at the chosen speed.",
+  Min = 0,
+  Max = 250,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    SPINBOT_SPEED = Value
+  end
+})
+
+-- ============ AIMBOT TAB ============
+local AimbotSection = AimbotTab:AddSection({"Aimbot"})
+
+AimbotTab:AddToggle({
+  Name = "Aimbot",
+  Default = true,
+  Callback = function(v)
+    AIMBOT_ENABLED = v
+    if _G.fovCircle then _G.fovCircle.Visible = v end
+    if not v then game:GetService("UserInputService").MouseBehavior = Enum.MouseBehavior.Default end
+  end
+})
+
+AimbotTab:AddToggle({
+  Name = "Wanted Only",
+  Default = false,
+  Callback = function(v) WANTED_ONLY = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Friends",
+  Default = true,
+  Callback = function(v) IGNORE_FRIENDS = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Inmates",
+  Default = false,
+  Callback = function(v) IGNORE_INMATES = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Guards",
+  Default = false,
+  Callback = function(v) IGNORE_GUARDS = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Criminals",
+  Default = false,
+  Callback = function(v) IGNORE_CRIMINALS = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Warden",
+  Default = false,
+  Callback = function(v) IGNORE_WARDEN = v end
+})
+
+AimbotTab:AddTextBox({
+  Name = "Target On",
+  Description = "Type part of player name and press Enter",
+  PlaceholderText = "Player name...",
+  Callback = function(Value)
+    if Value == "" then
+      TARGET_ON_PLAYER = nil
+    else
+      local partial = Value:lower()
+      for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Name:lower():find(partial, 1, true) then
+          TARGET_ON_PLAYER = plr.Name
+          return
+        end
+      end
+      TARGET_ON_PLAYER = nil
+    end
+  end
+})
+
+AimbotTab:AddSlider({
+  Name = "Smooth",
+  Min = 1,
+  Max = 100,
+  Increase = 1,
+  Default = 80,
+  Callback = function(Value) SMOOTHNESS = Value / 100 end
+})
+
+AimbotTab:AddSlider({
+  Name = "Angle Offset",
+  Min = 0,
+  Max = 25,
+  Increase = 0.5,
+  Default = 10.5,
+  Callback = function(Value) AIM_ANGLE_OFFSET = Value end
+})
+
+local FOVSection = AimbotTab:AddSection({"FOV"})
+
+AimbotTab:AddToggle({
+  Name = "Hide FOV Circle",
+  Default = false,
+  Callback = function(v)
+    HIDE_FOV_CIRCLE = v
+    if _G.toggleFOVCircle then
+      _G.toggleFOVCircle(v)
+    end
+  end
+})
+
+AimbotTab:AddSlider({
+  Name = "FOV Size",
+  Min = 30,
+  Max = 500,
+  Increase = 10,
+  Default = 100,
+  Callback = function(Value)
+    FOV_RADIUS = Value
+    if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
+  end
+})
+
+-- ============ VISUALS TAB ============
+local VisualsSection = VisualsTab:AddSection({"Visual Options"})
+
+VisualsTab:AddToggle({
+  Name = "ESP",
+  Default = false,
+  Callback = function(v)
+    ESP_ENABLED = v
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
+
+VisualsTab:AddToggle({
+  Name = "Hide ESP Names",
+  Description = "Hides the names above players when ESP is active",
+  Default = false,
+  Callback = function(v)
+    ESP_NAMES_ENABLED = not v  
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
+
+VisualsTab:AddToggle({
+  Name = "Hide Tag",
+  Default = false,
+  Callback = function(v)
+    HIDE_TAG_ENABLED = v
+    updateTagVisibility()
+  end
+})
+
+local CustomizationSection = VisualsTab:AddSection({"Customization"})
+
+VisualsTab:AddDropdown({
+  Name = "Skyboxes",
+  Description = "Choose your skybox",
+Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox"},
+  Default = "None",
+  Callback = function(Value)
+    setSkybox(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "BulletColor",
+  Description = "Choose your bullet color",
+  Options = {"Default", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Black", "White", "Rainbow"},
+  Default = "Default",
+  Callback = function(Value)
+    setBulletColor(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Weapon Skins",
+  Description = "Choose your weapon skin",
+  Options = {"Default", "Magma", "White Neon", "Purple Emo", "Bat Style", "Creepy Eyes", "Purple Pattern", "Trippy", "Rainbow", "Red Pattern", "Bizarre Force", "Golden"},
+  Default = "Default",
+  Callback = function(Value)
+    setWeaponSkin(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Shot Sound",
+  Description = "Choose your weapon shot sound",
+  Options = {"Default", "CS 1.6 AK-47", "Shine Shot", "Electric Shot", "FAHH", "Bow Shot", "Laser Shot", "Pew", "Meow", "Silenced Shot", "M16 Shot"},
+  Default = "Default",
+  Callback = function(Value)
+    setShotSound(Value)
+  end
+})
+
+-- ============ ITEMS TAB ============
+local ItemsSection = ItemsTab:AddSection({"Items"})
+
+ItemsTab:AddButton({"Keycard", function()
+    grabItem("Keycard")
+end})
+
+ItemsTab:AddButton({"First Aid", function()
+    grabItem("First Aid")
+end})
+
+local WeaponsSection = ItemsTab:AddSection({"Weapons"})
+
+ItemsTab:AddButton({"Desert Eagle", function()
+    grabItem("Desert Eagle")
+end})
+
+ItemsTab:AddButton({"UZI", function()
+    grabItem("UZI")
+end})
+
+ItemsTab:AddButton({"Scar", function()
+    grabItem("Scar")
+end})
+
+ItemsTab:AddButton({"M16", function()
+    grabItem("M16")
+end})
+
+ItemsTab:AddButton({"SVD", function()
+    grabItem("SVD")
+end})
+
+ItemsTab:AddButton({"AK-47", function()
+    grabItem("AK-47")
+end})
+
+ItemsTab:AddButton({"DB", function()
+    grabItem("DB")
+end})
+
+ItemsTab:AddButton({"M82", function()
+    grabItem("M82")
+end})
+
+ItemsTab:AddButton({"AUG", function()
+    grabItem("AUG")
+end})
+
+ItemsTab:AddButton({"IA2", function()
+    grabItem("IA2")
+end})
+
+ItemsTab:AddButton({"M9", function()
+    grabItem("M9")
+end})
+
+-- ============ TELEPORTS TAB ============
+local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
+
+local playerOptions = {"Select a player..."}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(playerOptions, plr.Name)
+    end
+end
+
+local playerDropdown = TeleportsTab:AddDropdown({
+    Name = "Teleport to Player",
+    Description = "Select a player to teleport to them",
+    Options = playerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        local target = Players:FindFirstChild(Value)
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local c = player.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end
+})
+
+_G.refreshPlayerDropdown = function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
+    
+    pcall(function() playerDropdown:Destroy() end)
+    
+    playerDropdown = TeleportsTab:AddDropdown({
+        Name = "Teleport to Player",
+        Description = "Select a player to teleport to them",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            local target = Players:FindFirstChild(Value)
+            if target and target.Character then
+                local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local c = player.Character
+                    if c and c:FindFirstChild("HumanoidRootPart") then
+                        c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                    end
+                end
+            end
+        end
+    })
+end
+
+local teleports = {
+  {"Escape the Prison", Vector3.new(2025, 95, 2763)},
+  {"Admin Room", Vector3.new(825, 127, 3762)},
+  {"Cafeteria", Vector3.new(1958, 156, 2684)},
+  {"Crafting", Vector3.new(1976, 156, 2822)},
+  {"Kitchen", Vector3.new(1895, 158, 2659)},
+  {"Armory 1 (Prison)", Vector3.new(1841, 165, 2674)},
+  {"Break Room 1", Vector3.new(1820, 156, 2688)},
+  {"Break Room 2", Vector3.new(1801, 156, 2654)},
+  {"Warden Room", Vector3.new(1700, 156, 2810)},
+  {"Front Entrance", Vector3.new(1682, 156, 2693)},
+  {"Roof", Vector3.new(1794, 180, 2789)},
+  {"Prison Tower 1 (M82)", Vector3.new(1531, 186, 2731)},
+  {"Prison Tower 2", Vector3.new(1849, 186, 3006)},
+  {"Front Yard", Vector3.new(1848, 154, 2897)},
+  {"Back Yard", Vector3.new(2051, 154, 2844)},
+  {"Cells 1", Vector3.new(2035, 156, 2734)},
+  {"Cells 2", Vector3.new(1942, 192, 2713)},
+  {"Sewage", Vector3.new(1944, 136, 2557)},
+  {"Armory 2 (Prison)", Vector3.new(2236, 165, 2719)},
+  {"Hall 1", Vector3.new(2259, 155, 2685)},
+  {"Back Entrance", Vector3.new(2363, 155, 2718)},
+  {"Lootboxes Area", Vector3.new(2325, 156, 2908)},
+  {"Criminal Base 1", Vector3.new(77, 168, 2455)},
+  {"Criminal Base 2", Vector3.new(57, 135, 870)},
+  {"Criminal Base 3", Vector3.new(1589, 76, 1369)},
+  {"Armory (City)", Vector3.new(1449, 67, 1530)},
+  {"Wood House (DB and Desert Eagle)", Vector3.new(1173, 213, 3309)},
+  {"Beach (Agent Vest)", Vector3.new(-189, 115, 1762)},
+  {"Bell Tower (M82)", Vector3.new(762, 173, 2307)},
+  {"Empty Grocery", Vector3.new(503, 110, 2085)},
+  {"Empty Building (DB)", Vector3.new(768, 110, 2398)},
+  {"Gym", Vector3.new(247, 110, 1729)},
+  {"Walpark", Vector3.new(397, 110, 1931)},
+  {"Motel", Vector3.new(206, 142, 989)},
+  {"Keycard", Vector3.new(937, 68, 910)},
+}
+
+for _, tp in ipairs(teleports) do
+  TeleportsTab:AddButton({tp[1], function()
+    local c = player.Character
+    if c and c:FindFirstChild("HumanoidRootPart") then
+      c.HumanoidRootPart.CFrame = CFrame.new(tp[2])
+    end
+  end})
+end
