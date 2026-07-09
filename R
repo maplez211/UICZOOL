@@ -247,57 +247,57 @@ VisualsTab:AddDropdown({
 local ItemsSection = ItemsTab:AddSection({"Items"})
 
 ItemsTab:AddButton({"Keycard", function()
-    grabItem("Keycard")
+    _G.grabItem("Keycard")
 end})
 
 ItemsTab:AddButton({"First Aid", function()
-    grabItem("First Aid")
+    _G.grabItem("First Aid")
 end})
 
 local WeaponsSection = ItemsTab:AddSection({"Weapons"})
 
 ItemsTab:AddButton({"Desert Eagle", function()
-    grabItem("Desert Eagle")
+    _G.grabItem("Desert Eagle")
 end})
 
 ItemsTab:AddButton({"UZI", function()
-    grabItem("UZI")
+    _G.grabItem("UZI")
 end})
 
 ItemsTab:AddButton({"Scar", function()
-    grabItem("Scar")
+    _G.grabItem("Scar")
 end})
 
 ItemsTab:AddButton({"M16", function()
-    grabItem("M16")
+    _G.grabItem("M16")
 end})
 
 ItemsTab:AddButton({"SVD", function()
-    grabItem("SVD")
+    _G.grabItem("SVD")
 end})
 
 ItemsTab:AddButton({"AK-47", function()
-    grabItem("AK-47")
+    _G.grabItem("AK-47")
 end})
 
 ItemsTab:AddButton({"DB", function()
-    grabItem("DB")
+    _G.grabItem("DB")
 end})
 
 ItemsTab:AddButton({"M82", function()
-    grabItem("M82")
+    _G.grabItem("M82")
 end})
 
 ItemsTab:AddButton({"AUG", function()
-    grabItem("AUG")
+    _G.grabItem("AUG")
 end})
 
 ItemsTab:AddButton({"IA2", function()
-    grabItem("IA2")
+    _G.grabItem("IA2")
 end})
 
 ItemsTab:AddButton({"M9", function()
-    grabItem("M9")
+    _G.grabItem("M9")
 end})
 
 -- ============ TELEPORTS TAB ============
