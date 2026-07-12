@@ -172,23 +172,76 @@ AimbotTab:AddSlider({
 })
 
 -- ============ GUN MODS TAB ============
-local FirerateSection = GunModsTab:AddSection({"Firerate"})
+local FirerateSection = GunModsTab:AddSection({"Weapons Modifications."})
 
 GunModsTab:AddSlider({
   Name = "Firerate",
-  Description = "Changes weapon firerate.",
+  Description = "Changes weapon's firerate.",
   Min = 0,
   Max = 0.1,
   Increase = 0.01,
   Default = 0,
+Callback = function(Value)
+    setGunMod("FireRate", Value)
+end
+})
+
+GunModsTab:AddSlider({
+  Name = "Spread",
+  Description = "Changes weapon's spread.",
+  Min = 0,
+  Max = 250,
+  Increase = 1,
+  Default = 0,
+Callback = function(Value)
+    setGunMod("Spread", Value)
+end
+})
+
+GunModsTab:AddSlider({
+  Name = "Range",
+  Description = "Changes weapon's range.",
+  Min = 0,
+  Max = 1000,
+  Increase = 1,
+  Default = 0,
+Callback = function(Value)
+    setGunMod("Range", Value)
+end
+})
+
+GunModsTab:AddSlider({
+  Name = "MaxAmmo",
+  Description = "Changes weapon's max ammo.",
+  Min = 0,
+  Max = 10000,
+  Increase = 1,
+  Default = 0,
   Callback = function(Value)
-    setFirerate(Value)
+    setGunMod("MaxAmmo", Value)
   end
 })
 
-GunModsTab:AddButton({"Reset Firerate", function()
-    resetFirerate()
-end})
+GunModsTab:AddSlider({
+  Name = "CurrentAmmo",
+  Description = "Changes weapon's current ammo.",
+  Min = 0,
+  Max = 10000,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("CurrentAmmo", Value)
+  end
+})
+
+GunModsTab:AddToggle({
+  Name = "AutoFire",
+  Description = "Enables automatic fire.",
+  Default = false,
+  Callback = function(Value)
+    setGunMod("AutoFire", Value)
+  end
+})
 
 -- ============ VISUALS TAB ============
 local VisualsSection = VisualsTab:AddSection({"Visual Options"})
