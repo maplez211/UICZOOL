@@ -172,15 +172,15 @@ AimbotTab:AddSlider({
 })
 
 -- ============ GUN MODS TAB ============
-local GunModsSection = GunModsTab:AddSection({"Firerate"})
+local FirerateSection = GunModsTab:AddSection({"Firerate"})
 
 GunModsTab:AddSlider({
   Name = "Firerate",
-  Description = "Changes weapon firerate",
+  Description = "Changes weapon firerate.",
   Min = 0,
   Max = 0.1,
   Increase = 0.01,
-  Default = 0.1,
+  Default = 0,
   Callback = function(Value)
     setFirerate(Value)
   end
