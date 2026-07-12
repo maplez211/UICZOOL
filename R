@@ -17,7 +17,7 @@ Window:AddMinimizeButton({
 -- ============ TABS ============
 local MainTab = Window:MakeTab({"Main", "settings"})
 local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
-local GunModsTab = Window:MakeTab({"Gun Mods", "gun"})
+local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
 local VisualsTab = Window:MakeTab({"Visuals", "eye"})
 local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
 local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
@@ -254,8 +254,8 @@ ItemsTab:AddButton({"Keycard", function()
     _G.grabItem("Keycard")
 end})
 
-ItemsTab:AddButton({"First Aid", function()
-    _G.grabItem("First Aid")
+ItemsTab:AddButton({"Medkit", function()
+    _G.grabItem("Medkit")
 end})
 
 local WeaponsSection = ItemsTab:AddSection({"Weapons"})
