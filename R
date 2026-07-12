@@ -172,19 +172,23 @@ AimbotTab:AddSlider({
 })
 
 -- ============ GUN MODS TAB ============
-local GunModsSection = GunModsTab:AddSection({"Weapon Modifications"})
+local GunModsSection = GunModsTab:AddSection({"Firerate"})
 
 GunModsTab:AddSlider({
   Name = "Firerate",
   Description = "Changes weapon firerate",
   Min = 0,
-  Max = 1,
+  Max = 0.1,
   Increase = 0.01,
-  Default = 0,
+  Default = 0.1,
   Callback = function(Value)
     setFirerate(Value)
   end
 })
+
+GunModsTab:AddButton({"Reset Firerate", function()
+    resetFirerate()
+end})
 
 -- ============ VISUALS TAB ============
 local VisualsSection = VisualsTab:AddSection({"Visual Options"})
