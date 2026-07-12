@@ -1,11 +1,11 @@
--- UI Script H4X do 2knw | Locked Up Panel
+-- UI Script Kayen's Panel | Locked Up Panel
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local Window = redzlib:MakeWindow({
   Title = "H4X do 2knw | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.1.7",
+  SubTitle = "by 2knw | Version 0.1.8",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -17,9 +17,10 @@ Window:AddMinimizeButton({
 -- ============ TABS ============
 local MainTab = Window:MakeTab({"Main", "settings"})
 local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
+local GunModsTab = Window:MakeTab({"Gun Mods", "gun"})
 local VisualsTab = Window:MakeTab({"Visuals", "eye"})
-local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
 local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
 
 Window:SelectTab(MainTab)
 
@@ -169,6 +170,9 @@ AimbotTab:AddSlider({
     if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
   end
 })
+
+-- ============ GUN MODS TAB ============
+local GunModsSection = GunModsTab:AddSection({"Weapon Modifications"})
 
 -- ============ VISUALS TAB ============
 local VisualsSection = VisualsTab:AddSection({"Visual Options"})
