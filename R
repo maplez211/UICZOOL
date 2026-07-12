@@ -1,974 +1,425 @@
--- Main Script (Locked Up) - Functions Only
-loadstring(game:HttpGet("https://raw.githubusercontent.com/maplez211/UICZOOL/refs/heads/main/R"))()
-
+-- UI Script Kayen's Panel | Locked Up Panel
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local UserInputService = game:GetService("UserInputService")
-
 local player = Players.LocalPlayer
-while not player do task.wait() player = Players.LocalPlayer end
-local playerGui = player:WaitForChild("PlayerGui")
-local camera = workspace.CurrentCamera
 
-FOV_RADIUS = 100
-SMOOTHNESS = 0.80
-PLAYER_FOV = 70 
-SPINBOT_SPEED = 0
-AIM_ANGLE_OFFSET = 10.5
-local rainbowHue = 0
-local FIRERATE_VALUE = 0
-local firerateHooked = false
-AIMBOT_ENABLED = true
-GRAY_SKYBOX_ENABLED = false
-HIDE_TAG_ENABLED = false
-WANTED_ONLY = false
-IGNORE_FRIENDS = true
-ESP_ENABLED = false
-ESP_NAMES_ENABLED = true  
-local MOUSE_LOCKED = false
-HIDE_FOV_CIRCLE = false
-NO_RECOIL = false
-RAINBOW_ACTIVE = false
-IGNORE_INMATES = false
-IGNORE_GUARDS = false
-IGNORE_CRIMINALS = false
-IGNORE_WARDEN = false
-local target = nil
-local rainbowConnection = nil
-TARGET_ON_PLAYER = nil
-local currentSkin = nil
-local activeSkinTools = {} 
-local currentShotSound = nil
-local processedTools = {} 
+local Window = redzlib:MakeWindow({
+  Title = "H4X do 2knw | Locked Up Panel",
+  SubTitle = "by 2knw | Version 0.1.8",
+  SaveFolder = "LockedUp_Hub"
+})
 
--- ============ FOV CIRCLE ============
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FOVGui"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://121222457209872", BackgroundTransparency = 1 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
+})
 
-local fovCircle = Instance.new("Frame", screenGui)
-fovCircle.Size = UDim2.new(0, FOV_RADIUS*2, 0, FOV_RADIUS*2)
-fovCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-fovCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-fovCircle.BackgroundColor3 = Color3.fromRGB(0,255,0)
-fovCircle.BackgroundTransparency = 1
-fovCircle.BorderSizePixel = 0
-Instance.new("UICorner", fovCircle).CornerRadius = UDim.new(1,0)
-Instance.new("UIStroke", fovCircle).Color = Color3.fromRGB(0, 255, 0)
-fovCircle.UIStroke.Thickness = 1
-fovCircle.Visible = AIMBOT_ENABLED
-_G.fovCircle = fovCircle
+-- ============ TABS ============
+local MainTab = Window:MakeTab({"Main", "settings"})
+local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
+local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
+local VisualsTab = Window:MakeTab({"Visuals", "eye"})
+local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
 
-_G.toggleFOVCircle = function(hide)
-    local stroke = fovCircle:FindFirstChild("UIStroke")
-    if stroke then
-        stroke.Enabled = not hide
-    end
-end
+Window:SelectTab(MainTab)
 
--- ============ MAIN FUNCTIONS ============
-local function isVisible(targetCharacter)
-	if not targetCharacter then return false end
-	local hrp = targetCharacter:FindFirstChild("HumanoidRootPart")
-	if not hrp then return false end
-	local origin = camera.CFrame.Position
-	local direction = hrp.Position - origin
-	local params = RaycastParams.new()
-	params.FilterType = Enum.RaycastFilterType.Blacklist
-	params.FilterDescendantsInstances = {player.Character, targetCharacter}
-	return Workspace:Raycast(origin, direction, params) == nil
-end
+-- ============ MAIN TAB ============
+MainTab:AddDiscordInvite({
+    Name = "H4X do 2knw",
+    Description = "Join our Discord server for updates and support!",
+    Logo = "rbxassetid://121222457209872",
+    Invite = "https://discord.gg/YqVunAY8J2",  
+})
 
-local function getClosestInFOV()
-	if TARGET_ON_PLAYER then
-		local targetPlr = Players:FindFirstChild(TARGET_ON_PLAYER)
-		if targetPlr and targetPlr.Character then
-			local humanoid = targetPlr.Character:FindFirstChildOfClass("Humanoid")
-			local hrp = targetPlr.Character:FindFirstChild("HumanoidRootPart")
-			if humanoid and humanoid.Health > 0 and hrp then
-				if WANTED_ONLY and targetPlr.Team and targetPlr.Team.Name == "Inmates" then
-					local head = targetPlr.Character:FindFirstChild("Head")
-					if head then
-						local bb = head:FindFirstChild("OverheadBBGUI")
-						if bb and bb:IsA("BillboardGui") then
-							local wanted = bb:FindFirstChild("WantedTag")
-							if wanted and wanted:IsA("TextLabel") then
-								if not wanted.Visible then return nil end
-							else return nil end
-						else return nil end
-					end
-				end
-				local screenPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-				if onScreen and isVisible(targetPlr.Character) then return targetPlr end
-			end
-		end
-		return nil
-	end
+local MainSection = MainTab:AddSection({"Player"})
 
-	local closest = nil
-	local shortestDistance = math.huge
-	local screenCenter = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-	local myTeam = player.Team
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= player and plr.Character then
-			if IGNORE_FRIENDS and player:IsFriendsWith(plr.UserId) then continue end
-			if myTeam and plr.Team == myTeam then continue end
-			
-if plr.Team then
-	local plrTeamName = plr.Team.Name
-	if IGNORE_INMATES and plrTeamName == "Inmates" then continue end
-	if IGNORE_GUARDS and plrTeamName == "Guards" then continue end
-	if IGNORE_CRIMINALS and plrTeamName == "Criminals" then continue end
-	if IGNORE_WARDEN and plrTeamName == "Warden" then continue end
-end
+MainTab:AddSlider({
+  Name = "Player FOV",
+  Description = "Changes your field of view (60-120)",
+  Min = 60,
+  Max = 120,
+  Increase = 1,
+  Default = 70,
+  Callback = function(Value)
+    PLAYER_FOV = Value
+    workspace.CurrentCamera.FieldOfView = Value
+  end
+})
 
-			if myTeam then
-				local myTeamName = myTeam.Name
-				local plrTeamName = plr.Team and plr.Team.Name
-				if (myTeamName == "Guards" and plrTeamName == "Warden") or (myTeamName == "Warden" and plrTeamName == "Guards") then
-					continue
-				end
-			end
-			
-			local humanoid = plr.Character:FindFirstChildOfClass("Humanoid")
-			local hrp = plr.Character:FindFirstChild("HumanoidRootPart")
-			if humanoid and humanoid.Health > 0 and hrp then
-				if WANTED_ONLY and plr.Team and plr.Team.Name == "Inmates" then
-					local head = plr.Character:FindFirstChild("Head")
-					if head then
-						local bb = head:FindFirstChild("OverheadBBGUI")
-						if bb and bb:IsA("BillboardGui") then
-							local wanted = bb:FindFirstChild("WantedTag")
-							if wanted and wanted:IsA("TextLabel") then
-								if not wanted.Visible then continue end
-							end
-						end
-					end
-				end
-				local screenPos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-				if onScreen then
-					local dist = (Vector2.new(screenPos.X, screenPos.Y) - screenCenter).Magnitude
-					if dist < FOV_RADIUS and dist < shortestDistance then
-						if isVisible(plr.Character) then
-							closest = plr
-							shortestDistance = dist
-						end
-					end
-				end
-			end
-		end
-	end
-	return closest
-end
+MainTab:AddSlider({
+  Name = "Spinbot",
+  Description = "Spins your character at the chosen speed.",
+  Min = 0,
+  Max = 250,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    SPINBOT_SPEED = Value
+  end
+})
 
-local isMobile = game:GetService("UserInputService").TouchEnabled
-if not isMobile then AIM_ANGLE_OFFSET = 0 end
+-- ============ AIMBOT TAB ============
+local AimbotSection = AimbotTab:AddSection({"Aimbot"})
 
-RunService.RenderStepped:Connect(function()
-	if not AIMBOT_ENABLED then
-		if MOUSE_LOCKED then
-			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-			MOUSE_LOCKED = false
-		end
-		return
-	end
-	target = getClosestInFOV()
-	if target and target.Character then
-		local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-		if hrp then
-			local camPos = camera.CFrame.Position
-			local lookAtHRP = CFrame.new(camPos, hrp.Position)
-			
-local fovScale = camera.FieldOfView / 70
-local angleOffset = AIM_ANGLE_OFFSET * fovScale
-			
-			local adjustedCFrame = lookAtHRP * CFrame.Angles(math.rad(-angleOffset), 0, 0)
-			camera.CFrame = camera.CFrame:Lerp(adjustedCFrame, SMOOTHNESS)
-			
-			if not MOUSE_LOCKED then
-				UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
-				MOUSE_LOCKED = true
-			end
-		end
-	else
-		if MOUSE_LOCKED then
-			UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-			MOUSE_LOCKED = false
-		end
-	end
-end)
+AimbotTab:AddToggle({
+  Name = "Aimbot",
+  Default = true,
+  Callback = function(v)
+    AIMBOT_ENABLED = v
+    if _G.fovCircle then _G.fovCircle.Visible = v end
+    if not v then game:GetService("UserInputService").MouseBehavior = Enum.MouseBehavior.Default end
+  end
+})
 
--- ============ SKYBOX SYSTEM ============
-local currentSkybox = nil
+AimbotTab:AddToggle({
+  Name = "Wanted Only",
+  Default = false,
+  Callback = function(v) WANTED_ONLY = v end
+})
 
-function setSkybox(name)
-	if currentSkybox then
-		pcall(function()
-			local lighting = game:GetService("Lighting")
-			if lighting:FindFirstChild(currentSkybox) then
-				lighting[currentSkybox]:Destroy()
-			end
-		end)
-		currentSkybox = nil
-	end
-	
-	if name == "None" then return end
+AimbotTab:AddToggle({
+  Name = "Ignore Friends",
+  Default = true,
+  Callback = function(v) IGNORE_FRIENDS = v end
+})
 
--- ============ SKYBOXES ============
-local skyboxes = {
-    ["Gray Skybox"] = {
-        SkyboxBk = "rbxassetid://154987705",
-        SkyboxDn = "rbxassetid://154987705",
-        SkyboxFt = "rbxassetid://154987705",
-        SkyboxLf = "rbxassetid://154987705",
-        SkyboxRt = "rbxassetid://154987705",
-        SkyboxUp = "rbxassetid://154987705",
-    },
-    ["2knw & Donk666 Skybox"] = {
-        SkyboxBk = "rbxassetid://121222457209872",
-        SkyboxDn = "rbxassetid://121222457209872",
-        SkyboxFt = "rbxassetid://121222457209872",
-        SkyboxLf = "rbxassetid://121222457209872",
-        SkyboxRt = "rbxassetid://121222457209872",
-        SkyboxUp = "rbxassetid://121222457209872",
-    },
-    ["Snow Skybox"] = {
-        SkyboxBk = "rbxassetid://155657655",
-        SkyboxDn = "rbxassetid://155674246",
-        SkyboxFt = "rbxassetid://155657609",
-        SkyboxLf = "rbxassetid://155657671",
-        SkyboxRt = "rbxassetid://155657619",
-        SkyboxUp = "rbxassetid://155674931",
-    },
-    ["Cartoon Skybox"] = {
-        SkyboxBk = "rbxassetid://15114954171",
-        SkyboxDn = "rbxassetid://15114958869",
-        SkyboxFt = "rbxassetid://15114963740",
-        SkyboxLf = "rbxassetid://15114957947",
-        SkyboxRt = "rbxassetid://15114955238",
-        SkyboxUp = "rbxassetid://15114948718",
-    },
-    ["Lince Skybox"] = {
-    SkyboxBk = "rbxassetid://102112718813044",
-    SkyboxDn = "rbxassetid://102112718813044",
-    SkyboxFt = "rbxassetid://102112718813044",
-    SkyboxLf = "rbxassetid://102112718813044",
-    SkyboxRt = "rbxassetid://102112718813044",
-    SkyboxUp = "rbxassetid://102112718813044",
-    },
-        ["Red Skybox"] = {
-    SkyboxBk = "rbxassetid://401664839",
-    SkyboxDn = "rbxassetid://401664862",
-    SkyboxFt = "rbxassetid://401664960",
-    SkyboxLf = "rbxassetid://401664881",
-    SkyboxRt = "rbxassetid://401664901",
-    SkyboxUp = "rbxassetid://401664936",
-    },
-        ["Slam Skybox"] = {
-    SkyboxBk = "rbxassetid://111576755001670",
-    SkyboxDn = "rbxassetid://111576755001670",
-    SkyboxFt = "rbxassetid://111576755001670",
-    SkyboxLf = "rbxassetid://111576755001670",
-    SkyboxRt = "rbxassetid://111576755001670",
-    SkyboxUp = "rbxassetid://111576755001670",
-    },
-        ["Green Eyeball Skybox"] = {
-    SkyboxBk = "rbxassetid://113857258921684",
-    SkyboxDn = "rbxassetid://131099902234134",
-    SkyboxFt = "rbxassetid://98342317659302",
-    SkyboxLf = "rbxassetid://130914716725043",
-    SkyboxRt = "rbxassetid://93970360759256",
-    SkyboxUp = "rbxassetid://135000456639127",
-},
-}
-	
-	local data = skyboxes[name]
-	if not data then return end
-	
-	local lighting = game:GetService("Lighting")
-	local sky = Instance.new("Sky", lighting)
-	sky.Name = name
-	for prop, value in pairs(data) do
-		sky[prop] = value
-	end
-	
-	currentSkybox = name
-end
+AimbotTab:AddToggle({
+  Name = "Ignore Inmates",
+  Default = false,
+  Callback = function(v) IGNORE_INMATES = v end
+})
 
-function updateTagVisibility()
-	local char = player.Character
-	if not char then return end
-	local head = char:FindFirstChild("Head")
-	if not head then return end
-	for _, name in ipairs({"Hostile", "KillstreakHeadGui", "OverheadBBGUI"}) do
-		local billboard = head:FindFirstChild(name)
-		if billboard and billboard:IsA("BillboardGui") then
-			billboard.Enabled = not HIDE_TAG_ENABLED
-		end
-	end
-end
+AimbotTab:AddToggle({
+  Name = "Ignore Guards",
+  Default = false,
+  Callback = function(v) IGNORE_GUARDS = v end
+})
 
--- ============ BULLET COLOR SYSTEM ============
-function setBulletColor(name)
-    if name == "Rainbow" then
-        RAINBOW_ACTIVE = true
-        return
+AimbotTab:AddToggle({
+  Name = "Ignore Criminals",
+  Default = false,
+  Callback = function(v) IGNORE_CRIMINALS = v end
+})
+
+AimbotTab:AddToggle({
+  Name = "Ignore Warden",
+  Default = false,
+  Callback = function(v) IGNORE_WARDEN = v end
+})
+
+AimbotTab:AddTextBox({
+  Name = "Target On",
+  Description = "Type part of player name and press Enter",
+  PlaceholderText = "Player name...",
+  Callback = function(Value)
+    if Value == "" then
+      TARGET_ON_PLAYER = nil
     else
-        RAINBOW_ACTIVE = false
-    end
-    
-    local colors = {
-        ["Default"] = Color3.fromRGB(255, 244, 90),  
-        ["Red"] = Color3.fromRGB(255, 0, 0),
-        ["Green"] = Color3.fromRGB(0, 255, 0),
-        ["Blue"] = Color3.fromRGB(0, 0, 255),
-        ["Yellow"] = Color3.fromRGB(255, 255, 0),
-        ["Purple"] = Color3.fromRGB(128, 0, 128),
-        ["Cyan"] = Color3.fromRGB(0, 255, 255),
-        ["Orange"] = Color3.fromRGB(255, 165, 0),
-        ["Pink"] = Color3.fromRGB(255, 105, 180),
-        ["Black"] = Color3.fromRGB(0, 0, 0),
-        ["White"] = Color3.fromRGB(255, 255, 255),   
-    }
-    
-    local color = colors[name]
-    if not color then return end
-    
-    local status = player:FindFirstChild("Status")
-    if status then
-        local bulletColor = status:FindFirstChild("BulletColor")
-        if bulletColor and bulletColor:IsA("Color3Value") then
-            bulletColor.Value = color
+      local partial = Value:lower()
+      for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player and plr.Name:lower():find(partial, 1, true) then
+          TARGET_ON_PLAYER = plr.Name
+          return
         end
+      end
+      TARGET_ON_PLAYER = nil
     end
-end
+  end
+})
 
-task.spawn(function()
-    local hue = 0
-    while task.wait(0.01) do
-        if RAINBOW_ACTIVE then
-            hue = (hue + 5) % 360
-            local color = Color3.fromHSV(hue / 360, 1, 1)
-            local status = player:FindFirstChild("Status")
-            if status then
-                local bulletColor = status:FindFirstChild("BulletColor")
-                if bulletColor and bulletColor:IsA("Color3Value") then
-                    bulletColor.Value = color
-                end
-            end
-        end
+AimbotTab:AddSlider({
+  Name = "Smooth",
+  Min = 1,
+  Max = 100,
+  Increase = 1,
+  Default = 80,
+  Callback = function(Value) SMOOTHNESS = Value / 100 end
+})
+
+AimbotTab:AddSlider({
+  Name = "Angle Offset",
+  Min = 0,
+  Max = 25,
+  Increase = 0.5,
+  Default = 10.5,
+  Callback = function(Value) AIM_ANGLE_OFFSET = Value end
+})
+
+local FOVSection = AimbotTab:AddSection({"FOV"})
+
+AimbotTab:AddToggle({
+  Name = "Hide FOV Circle",
+  Default = false,
+  Callback = function(v)
+    HIDE_FOV_CIRCLE = v
+    if _G.toggleFOVCircle then
+      _G.toggleFOVCircle(v)
     end
-end)
+  end
+})
 
--- ============ ESP ============
-local function applyESP(plr)
-	if plr == player then return end
-	local char = plr.Character
-	if not char then return end
-	
-	local humanoid = char:FindFirstChildOfClass("Humanoid")
-	if not humanoid or humanoid.Health <= 0 then return end
-	
-	local teamColor = Color3.fromRGB(255, 0, 0)
-	if plr.TeamColor then teamColor = plr.TeamColor.Color
-	elseif plr.Team and plr.Team.TeamColor then teamColor = plr.Team.TeamColor.Color end
-	
-	local highlight = char:FindFirstChild("ESPHighlight")
-	if not highlight then
-		highlight = Instance.new("Highlight", char)
-		highlight.Name = "ESPHighlight"
-	end
-	highlight.FillColor = teamColor
-	highlight.FillTransparency = 0.85
-	highlight.OutlineColor = teamColor
-	highlight.OutlineTransparency = 0
-	
-local head = char:FindFirstChild("Head")
-if head then
-	local billboard = head:FindFirstChild("ESPNameTag")
-	if not ESP_NAMES_ENABLED then
-		if billboard then billboard:Destroy() end
-	elseif not billboard then
-		billboard = Instance.new("BillboardGui", head)
-		billboard.Name = "ESPNameTag"
-		billboard.Size = UDim2.new(0, 200, 0, 30)
-		billboard.StudsOffset = Vector3.new(0, 1.5, 0)
-		billboard.AlwaysOnTop = true
-		local label = Instance.new("TextLabel", billboard)
-		label.BackgroundTransparency = 1
-		label.Size = UDim2.new(1, 0, 1, 0)
-		label.Text = plr.DisplayName .. " (@" .. plr.Name .. ")"
-		label.TextColor3 = Color3.fromRGB(255, 255, 255)
-		label.Font = Enum.Font.GothamBold
-		label.TextSize = 12
-		label.TextStrokeTransparency = 0
-		label.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-	  end
-   end
-end
+AimbotTab:AddSlider({
+  Name = "FOV Size",
+  Min = 30,
+  Max = 500,
+  Increase = 10,
+  Default = 100,
+  Callback = function(Value)
+    FOV_RADIUS = Value
+    if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
+  end
+})
 
-local function removeESP(plr)
-	if plr.Character then
-		local highlight = plr.Character:FindFirstChild("ESPHighlight")
-		if highlight then highlight:Destroy() end
-		local head = plr.Character:FindFirstChild("Head")
-		if head then
-			local billboard = head:FindFirstChild("ESPNameTag")
-			if billboard then billboard:Destroy() end
-		end
-	end
-end
+-- ============ GUN MODS TAB ============
+local GunModsSection = GunModsTab:AddSection({"Weapon Modifications"})
 
-_G.updateESP = function()
-	if not ESP_ENABLED then
-		for _, plr in ipairs(Players:GetPlayers()) do
-			if plr ~= player then removeESP(plr) end
-		end
-		return
-	end
-	
-	for _, plr in ipairs(Players:GetPlayers()) do
-		if plr ~= player then applyESP(plr) end
-	end
-end
+GunModsTab:AddSlider({
+  Name = "Firerate",
+  Description = "Changes weapon firerate",
+  Min = 0,
+  Max = 1,
+  Increase = 0.01,
+  Default = 0,
+  Callback = function(Value)
+    setFirerate(Value)
+  end
+})
 
-_G.refreshESP = function() _G.updateESP() end
+-- ============ VISUALS TAB ============
+local VisualsSection = VisualsTab:AddSection({"Visual Options"})
 
-Players.PlayerAdded:Connect(function(plr)
-	plr.CharacterAdded:Connect(function()
-		if ESP_ENABLED then
-			task.wait(0.5)
-			applyESP(plr)
-		end
-	end)
-end)
+VisualsTab:AddToggle({
+  Name = "ESP",
+  Default = false,
+  Callback = function(v)
+    ESP_ENABLED = v
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
 
-Players.PlayerRemoving:Connect(function(plr)
-	removeESP(plr)
-end)
+VisualsTab:AddToggle({
+  Name = "Hide ESP Names",
+  Description = "Hides the names above players when ESP is active",
+  Default = false,
+  Callback = function(v)
+    ESP_NAMES_ENABLED = not v  
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
 
+VisualsTab:AddToggle({
+  Name = "Hide Tag",
+  Default = false,
+  Callback = function(v)
+    HIDE_TAG_ENABLED = v
+    updateTagVisibility()
+  end
+})
+
+local CustomizationSection = VisualsTab:AddSection({"Customization"})
+
+VisualsTab:AddDropdown({
+  Name = "Skyboxes",
+  Description = "Choose your skybox",
+Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox"},
+  Default = "None",
+  Callback = function(Value)
+    setSkybox(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "BulletColor",
+  Description = "Choose your bullet color",
+  Options = {"Default", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Black", "White", "Rainbow"},
+  Default = "Default",
+  Callback = function(Value)
+    setBulletColor(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Weapon Skins",
+  Description = "Choose your weapon skin",
+  Options = {"Default", "Magma", "White Neon", "Purple Emo", "Bat Style", "Creepy Eyes", "Purple Pattern", "Trippy", "Rainbow", "Red Pattern", "Bizarre Force", "Golden"},
+  Default = "Default",
+  Callback = function(Value)
+    setWeaponSkin(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Shot Sound",
+  Description = "Choose your weapon shot sound",
+  Options = {"Default", "CS 1.6 AK-47", "Shine Shot", "Electric Shot", "FAHH", "Bow Shot", "Laser Shot", "Pew", "Meow", "Silenced Shot", "M16 Shot"},
+  Default = "Default",
+  Callback = function(Value)
+    setShotSound(Value)
+  end
+})
+
+-- ============ ITEMS TAB ============
+local ItemsSection = ItemsTab:AddSection({"Items"})
+
+ItemsTab:AddButton({"Keycard", function()
+    _G.grabItem("Keycard")
+end})
+
+ItemsTab:AddButton({"Medkit", function()
+    _G.grabItem("Medkit")
+end})
+
+local WeaponsSection = ItemsTab:AddSection({"Weapons"})
+
+ItemsTab:AddButton({"Desert Eagle", function()
+    _G.grabItem("Desert Eagle")
+end})
+
+ItemsTab:AddButton({"UZI", function()
+    _G.grabItem("UZI")
+end})
+
+ItemsTab:AddButton({"Scar", function()
+    _G.grabItem("Scar")
+end})
+
+ItemsTab:AddButton({"M16", function()
+    _G.grabItem("M16")
+end})
+
+ItemsTab:AddButton({"SVD", function()
+    _G.grabItem("SVD")
+end})
+
+ItemsTab:AddButton({"AK-47", function()
+    _G.grabItem("AK-47")
+end})
+
+ItemsTab:AddButton({"DB", function()
+    _G.grabItem("DB")
+end})
+
+ItemsTab:AddButton({"M82", function()
+    _G.grabItem("M82")
+end})
+
+ItemsTab:AddButton({"AUG", function()
+    _G.grabItem("AUG")
+end})
+
+ItemsTab:AddButton({"IA2", function()
+    _G.grabItem("IA2")
+end})
+
+ItemsTab:AddButton({"M9", function()
+    _G.grabItem("M9")
+end})
+
+-- ============ TELEPORTS TAB ============
+local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
+
+local playerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
-	if plr ~= player then
-		plr.CharacterAdded:Connect(function()
-			if ESP_ENABLED then
-				task.wait(0.5)
-				applyESP(plr)
-			end
-		end)
-	end
+    if plr ~= player then
+        table.insert(playerOptions, plr.Name)
+    end
 end
 
--- ============ WEAPON SKIN SYSTEM ============
-local faceNames = {"Top", "Bottom", "Left", "Right", "Front", "Back"}
-local skinApplyCount = {}  
-local MAX_APPLIES = 15  
+local playerDropdown = TeleportsTab:AddDropdown({
+    Name = "Teleport to Player",
+    Description = "Select a player to teleport to them",
+    Options = playerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        local target = Players:FindFirstChild(Value)
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local c = player.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end
+})
 
--- ============ SKINS LIST ============
-local weaponSkins = {
-    ["Default"] = {Type = "Default"},
-    ["Magma"] = {Type = "Texture", Id = "rbxassetid://77712984658507"},
-    ["White Neon"] = {Type = "Material", Material = Enum.Material.Neon, Color = Color3.fromRGB(255, 255, 255)},
-    ["Purple Emo"] = {Type = "Texture", Id = "rbxassetid://10890485599"},
-    ["Bat Style"] = {Type = "Texture", Id = "rbxassetid://10890476175"},
-    ["Creepy Eyes"] = {Type = "Texture", Id = "rbxassetid://6669971798"},
-    ["Purple Pattern"] = {Type = "Texture", Id = "rbxassetid://110365609046207"},
-    ["Trippy"] = {Type = "Texture", Id = "rbxassetid://7105910765"},
-    ["Rainbow"] = {Type = "Rainbow"},
-    ["Red Pattern"] = {Type = "Texture", Id = "rbxassetid://11149623628"},
-    ["Bizarre Force"] = {Type = "Material", Material = Enum.Material.ForceField, Color = Color3.fromRGB(150, 200, 255)},
-    ["Golden"] = {Type = "Texture", Id = "rbxassetid://7717621185"},
+_G.refreshPlayerDropdown = function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
+    
+    pcall(function() playerDropdown:Destroy() end)
+    
+    playerDropdown = TeleportsTab:AddDropdown({
+        Name = "Teleport to Player",
+        Description = "Select a player to teleport to them",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            local target = Players:FindFirstChild(Value)
+            if target and target.Character then
+                local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local c = player.Character
+                    if c and c:FindFirstChild("HumanoidRootPart") then
+                        c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                    end
+                end
+            end
+        end
+    })
+end
+
+local teleports = {
+  {"Escape the Prison", Vector3.new(2025, 95, 2763)},
+  {"Admin Room", Vector3.new(825, 127, 3762)},
+  {"Cafeteria", Vector3.new(1958, 156, 2684)},
+  {"Crafting", Vector3.new(1976, 156, 2822)},
+  {"Kitchen", Vector3.new(1895, 158, 2659)},
+  {"Armory 1 (Prison)", Vector3.new(1841, 165, 2674)},
+  {"Break Room 1", Vector3.new(1820, 156, 2688)},
+  {"Break Room 2", Vector3.new(1801, 156, 2654)},
+  {"Warden Room", Vector3.new(1700, 156, 2810)},
+  {"Front Entrance", Vector3.new(1682, 156, 2693)},
+  {"Roof", Vector3.new(1794, 180, 2789)},
+  {"Prison Tower 1 (M82)", Vector3.new(1531, 186, 2731)},
+  {"Prison Tower 2", Vector3.new(1849, 186, 3006)},
+  {"Front Yard", Vector3.new(1848, 154, 2897)},
+  {"Back Yard", Vector3.new(2051, 154, 2844)},
+  {"Cells 1", Vector3.new(2035, 156, 2734)},
+  {"Cells 2", Vector3.new(1942, 192, 2713)},
+  {"Sewage", Vector3.new(1944, 136, 2557)},
+  {"Armory 2 (Prison)", Vector3.new(2236, 165, 2719)},
+  {"Hall 1", Vector3.new(2259, 155, 2685)},
+  {"Back Entrance", Vector3.new(2363, 155, 2718)},
+  {"Lootboxes Area", Vector3.new(2325, 156, 2908)},
+  {"Criminal Base 1", Vector3.new(77, 168, 2455)},
+  {"Criminal Base 2", Vector3.new(57, 135, 870)},
+  {"Criminal Base 3", Vector3.new(1589, 76, 1369)},
+  {"Armory (City)", Vector3.new(1449, 67, 1530)},
+  {"Wood House (DB and Desert Eagle)", Vector3.new(1173, 213, 3309)},
+  {"Beach (Agent Vest)", Vector3.new(-189, 115, 1762)},
+  {"Bell Tower (M82)", Vector3.new(762, 173, 2307)},
+  {"Empty Grocery", Vector3.new(503, 110, 2085)},
+  {"Empty Building (DB)", Vector3.new(768, 110, 2398)},
+  {"Gym", Vector3.new(247, 110, 1729)},
+  {"Walpark", Vector3.new(397, 110, 1931)},
+  {"Motel", Vector3.new(206, 142, 989)},
+  {"Keycard", Vector3.new(937, 68, 910)},
 }
 
-function applyTextureSkin(tool, skinId)
-    if not skinId or skinId == "" then return end
-    
-    for _, part in ipairs(tool:GetDescendants()) do
-        if part.Name == "Muzzle" then continue end
-        if not part:IsA("BasePart") then continue end
-        
-        local firstTex = part:FindFirstChild("Skin_Top")
-        if firstTex and firstTex:IsA("Texture") and firstTex.Texture == skinId then
-            continue  
-        end
-        
-        for _, face in ipairs(faceNames) do
-            local existing = part:FindFirstChild("Skin_" .. face)
-            if existing then existing:Destroy() end
-        end
-        
-        for _, face in ipairs(faceNames) do
-            local tex = Instance.new("Texture")
-            tex.Name = "Skin_" .. face
-            tex.Texture = skinId
-            tex.Color3 = Color3.fromRGB(255, 255, 255)
-            tex.StudsPerTileU = 3
-            tex.StudsPerTileV = 3
-            tex.Face = Enum.NormalId[face]
-            tex.Parent = part
-        end
+for _, tp in ipairs(teleports) do
+  TeleportsTab:AddButton({tp[1], function()
+    local c = player.Character
+    if c and c:FindFirstChild("HumanoidRootPart") then
+      c.HumanoidRootPart.CFrame = CFrame.new(tp[2])
     end
+  end})
 end
-
-function applyMaterialSkin(tool, material, color)
-    for _, part in ipairs(tool:GetDescendants()) do
-        if not part:IsA("BasePart") then continue end
-        
-        if part.Material == material and part.Color == color then continue end
-        
-        for _, child in ipairs(part:GetChildren()) do
-            if child:IsA("Texture") or child:IsA("Decal") then
-                child:Destroy()
-            end
-        end
-        
-        if part:IsA("MeshPart") then
-            part.TextureID = ""
-        end
-        
-        part.Material = material
-        part.Color = color
-    end
-end
-
-
-function applyRainbowSkin(tool)
-    local color = Color3.fromHSV(rainbowHue / 360, 1, 1)
-    for _, part in ipairs(tool:GetDescendants()) do
-        if not part:IsA("BasePart") then continue end
-        
-        for _, child in ipairs(part:GetChildren()) do
-            if child:IsA("Texture") or child:IsA("Decal") then
-                child:Destroy()
-            end
-        end
-        
-        if part:IsA("MeshPart") then
-            part.TextureID = ""
-        end
-        
-        part.Material = Enum.Material.Neon
-        part.Color = color
-    end
-end
-
-function applySkinToTool(tool, skinData)
-    if not skinData then return end
-    
-    if skinData.Type == "Texture" then
-        applyTextureSkin(tool, skinData.Id)
-    elseif skinData.Type == "Material" then
-        applyMaterialSkin(tool, skinData.Material, skinData.Color)
-    elseif skinData.Type == "Rainbow" then
-        applyRainbowSkin(tool)
-    end
-end
-
-function setWeaponSkin(name)
-    local skinData = weaponSkins[name]
-    if not skinData then return end
-    
-    if currentSkin == "Rainbow" and name ~= "Rainbow" then
-        if rainbowConnection then
-            rainbowConnection:Disconnect()
-            rainbowConnection = nil
-        end
-    end
-    
-    if name == "Rainbow" and not rainbowConnection then
-        rainbowConnection = RunService.RenderStepped:Connect(function()
-            rainbowHue = (rainbowHue + 1) % 360
-        end)
-    end
-    
-    currentSkin = name
-    skinApplyCount = {}  
-    
-    for tool, _ in pairs(activeSkinTools) do
-        activeSkinTools[tool] = nil
-    end
-    
-    if skinData.Type ~= "Default" then
-        local char = player.Character
-        if char then
-            local tool = char:FindFirstChildOfClass("Tool")
-            if tool then
-                applySkinToTool(tool, skinData)
-                activeSkinTools[tool] = true
-                skinApplyCount[tool] = 1
-            end
-        end
-        
-        local backpack = player:FindFirstChild("Backpack")
-        if backpack then
-            for _, tool in ipairs(backpack:GetChildren()) do
-                if tool:IsA("Tool") then
-                    applySkinToTool(tool, skinData)
-                    activeSkinTools[tool] = true
-                    skinApplyCount[tool] = 1
-                end
-            end
-        end
-    end
-end
-
-task.spawn(function()
-    while task.wait(0.17) do
-        if currentSkin and currentSkin ~= "Default" then
-            local skinData = weaponSkins[currentSkin]
-            if skinData then
-                for tool, _ in pairs(activeSkinTools) do
-                    if tool and tool.Parent then
-                        local count = skinApplyCount[tool] or 0
-                        if skinData.Type == "Rainbow" or skinData.Type == "Material" or count < MAX_APPLIES then
-                            applySkinToTool(tool, skinData)
-                            skinApplyCount[tool] = count + 1
-                        end
-                    else
-                        activeSkinTools[tool] = nil
-                        skinApplyCount[tool] = nil
-                    end
-                end
-                
-                local char = player.Character
-                if char then
-                    local tool = char:FindFirstChildOfClass("Tool")
-                    if tool and not activeSkinTools[tool] then
-                        applySkinToTool(tool, skinData)
-                        activeSkinTools[tool] = true
-                        skinApplyCount[tool] = 1
-                    end
-                end
-                
-                local backpack = player:FindFirstChild("Backpack")
-                if backpack then
-                    for _, tool in ipairs(backpack:GetChildren()) do
-                        if tool:IsA("Tool") and not activeSkinTools[tool] then
-                            applySkinToTool(tool, skinData)
-                            activeSkinTools[tool] = true
-                            skinApplyCount[tool] = 1
-                        end
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- ============ SHOT SOUND SYSTEM ============
-local shotSounds = {
-    ["Default"] = "",
-    ["CS 1.6 AK-47"] = "rbxassetid://93834968698731",
-    ["Shine Shot"] = "rbxassetid://95355026311362",
-    ["Electric Shot"] = "rbxassetid://140674777423791",
-    ["FAHH"] = "rbxassetid://135545038339685",
-    ["Bow Shot"] = "rbxassetid://136967567038278",
-    ["Laser Shot"] = "rbxassetid://83586601168148",
-    ["Pew"] = "rbxassetid://92116619647676",
-    ["Meow"] = "rbxassetid://133948180669198",
-    ["Silenced Shot"] = "rbxassetid://89214508659473",
-    ["M16 Shot"] = "rbxassetid://84408989598671",
-}
-
-local function forceApplySound(tool, soundId)
-    if not soundId or soundId == "" then return false end
-    if not tool or not tool:IsA("Tool") then return false end
-    
-    local handle = tool:FindFirstChild("Handle")
-    if not handle then return false end
-    
-    local fireSound = handle:FindFirstChild("FireSound")
-    if not fireSound or not fireSound:IsA("Sound") then return false end
-    
-    fireSound.SoundId = soundId
-    return true
-end
-
-local function tryApplyWithRetry(tool, soundId, maxAttempts)
-    maxAttempts = maxAttempts or 20
-    for i = 1, maxAttempts do
-        if forceApplySound(tool, soundId) then
-            return true
-        end
-        task.wait(0.05) 
-    end
-    return false
-end
-
-function applySoundToAllTools()
-    if not currentShotSound or currentShotSound == "" then return end
-    
-    local processed = {}
-    
-    local function processTool(tool)
-        if tool:IsA("Tool") and not processed[tool] then
-            processed[tool] = true
-            task.spawn(function()
-                tryApplyWithRetry(tool, currentShotSound)
-            end)
-        end
-    end
-    
-    local char = player.Character
-    if char then
-        for _, child in ipairs(char:GetChildren()) do
-            processTool(child)
-        end
-    end
-    
-    local bp = player:FindFirstChild("Backpack")
-    if bp then
-        for _, child in ipairs(bp:GetChildren()) do
-            processTool(child)
-        end
-    end
-end
-
-function setShotSound(name)
-    local soundId = shotSounds[name]
-    if soundId == nil then return end
-    currentShotSound = soundId
-    applySoundToAllTools()
-end
-
-task.spawn(function()
-    while task.wait(0.2) do 
-        if not currentShotSound or currentShotSound == "" then 
-        else
-            local char = player.Character
-            if char then
-                for _, child in ipairs(char:GetChildren()) do
-                    if child:IsA("Tool") and not processedTools[child] then
-                        processedTools[child] = true
-                        task.spawn(function()
-                            tryApplyWithRetry(child, currentShotSound)
-                        end)
-                    end
-                end
-            end
-            
-            local bp = player:FindFirstChild("Backpack")
-            if bp then
-                for _, child in ipairs(bp:GetChildren()) do
-                    if child:IsA("Tool") and not processedTools[child] then
-                        processedTools[child] = true
-                        task.spawn(function()
-                            tryApplyWithRetry(child, currentShotSound)
-                        end)
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- ============ ITEM GRAB SYSTEM ============
-local itemGrabs = {
-    ["Keycard"] = {
-        Positions = {CFrame.new(946, 68, 923)},
-        ItemName = "Key"
-    },
-    ["Medkit"] = {
-        Positions = {CFrame.new(1844, 156, 2697)},
-        ItemName = "Medkit"
-    },
-    ["Desert Eagle"] = {
-        Positions = {CFrame.new(1179.56, 213.5, 3306.94)},
-        ItemName = "Desert Eagle"
-    },
-    ["UZI"] = {
-        Positions = {
-            CFrame.new(1843, 157, 2695),
-            CFrame.new(1409.17, 66.57, 1572.93)  
-        },
-        ItemName = "UZI"
-    },
-    ["Scar"] = {
-        Positions = {CFrame.new(1568.16, 67.11, 1378.86)},
-        ItemName = "SCAR"
-    },
-    ["M16"] = {
-        Positions = {CFrame.new(1398, 69, 1558)},
-        ItemName = "M16"
-    },
-    ["SVD"] = {
-        Positions = {CFrame.new(29, 138, 944)},
-        ItemName = "SVD"
-    },
-    ["AK-47"] = {
-        Positions = {CFrame.new(89, 152, 2475)},
-        ItemName = "AK-47"
-    },
-    ["DB"] = {
-        Positions = {CFrame.new(1185, 214, 3290)},
-        ItemName = "DB"
-    },
-    ["M82"] = {
-        Positions = {CFrame.new(1521, 186, 2731)},
-        ItemName = "M82"
-    },
-    ["AUG"] = {
-        Positions = {CFrame.new(2226, 156, 2696)},
-        ItemName = "AUG"
-    },
-    ["IA2"] = {
-        Positions = {CFrame.new(1881, 156, 2672)},
-        ItemName = "IA2"
-    },
-    ["M9"] = {
-        Positions = {CFrame.new(1843, 157, 2695)},
-        ItemName = "M9"
-    },
-}
-
-local itemPickupCache = {}
-
-local function findItemPickup(itemName)
-    if itemPickupCache[itemName] then
-        return itemPickupCache[itemName]
-    end
-    
-    local giver = workspace:WaitForChild("Prison_ITEMS"):WaitForChild("giver")
-    
-    for _, model in ipairs(giver:GetChildren()) do
-        if model.Name == itemName and model:IsA("Model") then
-            local pickup = model:FindFirstChild("ITEMPICKUP")
-            if pickup then
-                itemPickupCache[itemName] = pickup
-                return pickup
-            end
-        end
-    end
-    
-    return nil
-end
-
-function grabItem(itemName)
-    local itemData = itemGrabs[itemName]
-    if not itemData then return end
-    
-    local pickup = findItemPickup(itemData.ItemName)
-    if not pickup then return end
-    
-    local char = player.Character
-    if not char then return end
-    local hrp = char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
-    
-    local originalPosition = hrp.CFrame
-    
-    for _, pos in ipairs(itemData.Positions) do
-        hrp.CFrame = pos
-        task.wait(0.2)
-        
-        local args = {
-            [1] = pickup,
-            [2] = "GetTool"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Events"):WaitForChild("Interact"):InvokeServer(unpack(args))
-    end
-    
-    task.wait(0.1)
-    hrp.CFrame = originalPosition
-end
-
-_G.grabItem = grabItem
-
--- ============ FIRERATE SYSTEM ============
-function setFirerate(value)
-    FIRERATE_VALUE = value
-    
-    if value <= 0 then return end
-    if firerateHooked then return end
-    
-    firerateHooked = true
-    
-    local LoadWeaponRemote = game:GetService("ReplicatedStorage").Events.LoadTool
-    
-    for _, connection in next, getconnections(LoadWeaponRemote.OnClientEvent) do
-        local Old = connection.Function
-        connection.Function = function(Tool, ...)
-            xpcall(function()
-                local GunStates = require(Tool:WaitForChild("GunStates"))
-                GunStates.FireRate = FIRERATE_VALUE
-            end, function()
-                warn("Failed to set firerate")
-            end)
-            
-            return Old(Tool, ...)
-        end
-    end
-end
-
-task.spawn(function()
-    while task.wait(0.1) do
-        if FIRERATE_VALUE > 0 and firerateHooked then
-            local char = player.Character
-            if char then
-                local tool = char:FindFirstChildOfClass("Tool")
-                if tool then
-                    pcall(function()
-                        local GunStates = require(tool:WaitForChild("GunStates"))
-                        GunStates.FireRate = FIRERATE_VALUE
-                    end)
-                end
-            end
-        end
-    end
-end)
-
--- ============ PLAYER EVENTS ============
-UserInputService.InputBegan:Connect(function(input, processed)
-  if processed then return end
-  if input.KeyCode == Enum.KeyCode.E or input.KeyCode == Enum.KeyCode.LeftControl then
-    AIMBOT_ENABLED = not AIMBOT_ENABLED
-    if fovCircle then fovCircle.Visible = AIMBOT_ENABLED end
-  end
-end)
-
-player.CharacterAdded:Connect(function()
-  camera.CameraType = Enum.CameraType.Custom
-  UserInputService.MouseBehavior = Enum.MouseBehavior.Default
-  MOUSE_LOCKED = false
-  camera.FieldOfView = PLAYER_FOV
-  processedTools = {} 
-  
-  if ESP_ENABLED then
-    task.wait(0.5)
-    _G.updateESP()
-  end
-end)
-
--- ============ PLAYER TELEPORT DROPDOWN REFRESH ============
-Players.PlayerAdded:Connect(function()
-    task.wait(0.5)
-    if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
-end)
-Players.PlayerRemoving:Connect(function()
-    task.wait(0.3)
-    if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
-end)
-
--- ============ SPINBOT ============
-RunService.RenderStepped:Connect(function()
-    if SPINBOT_SPEED and SPINBOT_SPEED > 0 then
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = hrp.CFrame * CFrame.Angles(0, math.rad(SPINBOT_SPEED), 0)
-        end
-    end
-end)
-
-camera.FieldOfView = PLAYER_FOV
-
-task.spawn(function()
-  while task.wait(1) do
-    if HIDE_TAG_ENABLED then
-      updateTagVisibility()
-    end
-  end
-end)
-
-_G.grabItem = grabItem
