@@ -23,7 +23,6 @@ local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
 local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
 
 Window:SelectTab(MainTab)
-Window:LoadConfig()
 
 -- ============ MAIN TAB ============
 MainTab:AddDiscordInvite({
@@ -195,7 +194,6 @@ GunModsTab:AddSlider({
   Max = 250,
   Increase = 1,
   Default = 0,
-  Save = false,  
   Callback = function(Value)
     setGunMod("Spread", Value)
   end
@@ -208,7 +206,6 @@ GunModsTab:AddSlider({
   Max = 1000,
   Increase = 1,
   Default = 0,
-  Save = false,  
   Callback = function(Value)
     setGunMod("Range", Value)
   end
@@ -221,7 +218,6 @@ GunModsTab:AddSlider({
   Max = 10000,
   Increase = 1,
   Default = 0,
-  Save = false,  
   Callback = function(Value)
     setGunMod("MaxAmmo", Value)
   end
@@ -234,7 +230,6 @@ GunModsTab:AddSlider({
   Max = 10000,
   Increase = 1,
   Default = 0,
-  Save = false,  
   Callback = function(Value)
     setGunMod("CurrentAmmo", Value)
   end
@@ -244,7 +239,6 @@ GunModsTab:AddToggle({
   Name = "AutoFire",
   Description = "Enables automatic fire.",
   Default = false,
-  Save = false,  
   Callback = function(Value)
     setGunMod("AutoFire", Value)
   end
