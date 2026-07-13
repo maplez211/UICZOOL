@@ -181,7 +181,6 @@ GunModsTab:AddSlider({
   Max = 0.1,
   Increase = 0.01,
   Default = 0,
-  Save = false,  -
   Callback = function(Value)
     setGunMod("FireRate", Value)
   end
