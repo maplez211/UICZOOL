@@ -2,10 +2,11 @@
 local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Kayen's Panel | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.1.9",
+  SubTitle = "by 2knw | Version 0.2.0",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -35,16 +36,19 @@ MainTab:AddDiscordInvite({
 
 local MainSection = MainTab:AddSection({"Player"})
 
-MainTab:AddSlider({
-  Name = "Player FOV",
-  Description = "Changes your field of view (60-120)",
-  Min = 60,
-  Max = 120,
-  Increase = 1,
-  Default = 70,
-  Callback = function(Value)
-    PLAYER_FOV = Value
-    workspace.CurrentCamera.FieldOfView = Value
+MainTab:AddToggle({
+  Name = "Anti Kick",
+  Description = "Remove anti-noclip parts so you can pass through safely",
+  Default = false,
+  Callback = function(v)
+    ANTI_KICK_ENABLED = v
+    if v then
+        for _, part in ipairs(workspace:GetDescendants()) do
+            if part.Name == "Part" and part.Anchored and part.Transparency >= 1 then
+                part:Destroy()
+            end
+        end
+    end
   end
 })
 
@@ -123,6 +127,85 @@ end
 
 PlayersTab:AddButton({"Update Players List", function()
     if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
+end})
+
+-- ============ VIEW PLAYER SECTION ============
+local ViewSection = PlayersTab:AddSection({"View Player"})
+
+local viewPlayerOptions = {"Select a player..."}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(viewPlayerOptions, plr.Name)
+    end
+end
+
+local SPECTATE_PLAYER = nil
+local spectateConnection = nil
+
+local viewPlayerDropdown = PlayersTab:AddDropdown({
+    Name = "View Player",
+    Description = "Select a player to spectate",
+    Options = viewPlayerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        SPECTATE_PLAYER = Value
+    end
+})
+
+PlayersTab:AddToggle({
+    Name = "Spectate Player",
+    Description = "Toggle to spectate the selected player",
+    Default = false,
+    Callback = function(v)
+        if v and SPECTATE_PLAYER then
+            local target = Players:FindFirstChild(SPECTATE_PLAYER)
+            if target and target.Character then
+                workspace.CurrentCamera.CameraSubject = target.Character:FindFirstChildOfClass("Humanoid")
+                spectateConnection = RunService.RenderStepped:Connect(function()
+                    if target and target.Character then
+                        local humanoid = target.Character:FindFirstChildOfClass("Humanoid")
+                        if humanoid and humanoid.Health > 0 then
+                            workspace.CurrentCamera.CameraSubject = humanoid
+                        end
+                    end
+                end)
+            end
+        else
+            if spectateConnection then
+                spectateConnection:Disconnect()
+                spectateConnection = nil
+            end
+            if player.Character then
+                local humanoid = player.Character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    workspace.CurrentCamera.CameraSubject = humanoid
+                end
+            end
+        end
+    end
+})
+
+PlayersTab:AddButton({"Update Players List", function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
+    
+    pcall(function() viewPlayerDropdown:Destroy() end)
+    
+    viewPlayerDropdown = PlayersTab:AddDropdown({
+        Name = "View Player",
+        Description = "Select a player to spectate",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            SPECTATE_PLAYER = Value
+        end
+    })
 end})
 
 -- ============ AIMBOT TAB ============
