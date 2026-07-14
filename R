@@ -4,8 +4,8 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local Window = redzlib:MakeWindow({
-  Title = "H4X do 2knw | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.1.8",
+  Title = "Kayen's Panel | Locked Up Panel",
+  SubTitle = "by 2knw | Version 0.1.9",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -16,11 +16,12 @@ Window:AddMinimizeButton({
 
 -- ============ TABS ============
 local MainTab = Window:MakeTab({"Main", "settings"})
-local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
-local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
+local PlayersTab = Window:MakeTab({"Players", "user"})
 local VisualsTab = Window:MakeTab({"Visuals", "eye"})
-local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
 local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
+local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
 
 Window:SelectTab(MainTab)
 
@@ -58,6 +59,71 @@ MainTab:AddSlider({
     SPINBOT_SPEED = Value
   end
 })
+
+-- ============ PLAYERS TAB ============
+local PlayersSection = PlayersTab:AddSection({"Teleport to Player"})
+
+local playerOptions = {"Select a player..."}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(playerOptions, plr.Name)
+    end
+end
+
+local playerDropdown = PlayersTab:AddDropdown({
+    Name = "Teleport to Player",
+    Description = "Select a player to teleport to them",
+    Options = playerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        local target = Players:FindFirstChild(Value)
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local c = player.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end
+})
+
+_G.refreshPlayerDropdown = function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
+    
+    pcall(function() playerDropdown:Destroy() end)
+    
+    playerDropdown = PlayersTab:AddDropdown({
+        Name = "Teleport to Player",
+        Description = "Select a player to teleport to them",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            local target = Players:FindFirstChild(Value)
+            if target and target.Character then
+                local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    local c = player.Character
+                    if c and c:FindFirstChild("HumanoidRootPart") then
+                        c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                    end
+                end
+            end
+        end
+    })
+end
+
+PlayersTab:AddButton({"Update Players List", function()
+    if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
+end})
 
 -- ============ AIMBOT TAB ============
 local AimbotSection = AimbotTab:AddSection({"Aimbot"})
@@ -375,64 +441,6 @@ end})
 
 -- ============ TELEPORTS TAB ============
 local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
-
-local playerOptions = {"Select a player..."}
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr ~= player then
-        table.insert(playerOptions, plr.Name)
-    end
-end
-
-local playerDropdown = TeleportsTab:AddDropdown({
-    Name = "Teleport to Player",
-    Description = "Select a player to teleport to them",
-    Options = playerOptions,
-    Default = "Select a player...",
-    Callback = function(Value)
-        if Value == "Select a player..." then return end
-        local target = Players:FindFirstChild(Value)
-        if target and target.Character then
-            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local c = player.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
-                end
-            end
-        end
-    end
-})
-
-_G.refreshPlayerDropdown = function()
-    local options = {"Select a player..."}
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player then
-            table.insert(options, plr.Name)
-        end
-    end
-    
-    pcall(function() playerDropdown:Destroy() end)
-    
-    playerDropdown = TeleportsTab:AddDropdown({
-        Name = "Teleport to Player",
-        Description = "Select a player to teleport to them",
-        Options = options,
-        Default = "Select a player...",
-        Callback = function(Value)
-            if Value == "Select a player..." then return end
-            local target = Players:FindFirstChild(Value)
-            if target and target.Character then
-                local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-                if hrp then
-                    local c = player.Character
-                    if c and c:FindFirstChild("HumanoidRootPart") then
-                        c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
-                    end
-                end
-            end
-        end
-    })
-end
 
 local teleports = {
   {"Escape the Prison", Vector3.new(2025, 95, 2763)},
