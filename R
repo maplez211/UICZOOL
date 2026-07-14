@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-local Window = Starlight({
+local Window = Starlight:Window({
     Name = "Kayen's Panel | Locked Up",
     RootFolder = "KayenPanel",
     ConfigFolder = "KayenPanel/Configs"
