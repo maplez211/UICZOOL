@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Kayen's Panel | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.2.1" ,
+  SubTitle = "by 2knw | Version 0.2.2",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -17,9 +17,9 @@ Window:AddMinimizeButton({
 
 -- ============ TABS ============
 local MainTab = Window:MakeTab({"Main", "settings"})
+local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
 local PlayersTab = Window:MakeTab({"Players", "user"})
 local VisualsTab = Window:MakeTab({"Visuals", "eye"})
-local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
 local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
 local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
 local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
@@ -28,10 +28,10 @@ Window:SelectTab(MainTab)
 
 -- ============ MAIN TAB ============
 MainTab:AddDiscordInvite({
-    Name = "Kayen's Panel",
-    Description = "Join our Discord server for updates and support!",
-    Logo = "rbxassetid://121222457209872",
-    Invite = "https://discord.gg/YqVunAY8J2",  
+    Name = "Kayen's Panel | LUK Clan",
+    Description = "Join our Clan Discord server for updates and support!",
+    Logo = "rbxassetid://131323899878199",
+    Invite = "https://discord.gg/rdQj6S3URn",  
 })
 
 local MainSection = MainTab:AddSection({"Player"})
@@ -320,7 +320,7 @@ local FOVSection = AimbotTab:AddSection({"FOV"})
 AimbotTab:AddDropdown({
   Name = "FOV Color",
   Description = "Choose the FOV circle color",
-  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White", "Rainbow"},
   Default = "Black",
   Callback = function(Value)
     setFOVColor(Value)
@@ -455,10 +455,35 @@ VisualsTab:AddToggle({
 
 local CustomizationSection = VisualsTab:AddSection({"Customization"})
 
+VisualsTab:AddToggle({
+  Name = "Remove Fog",
+  Description = "Removes the fog from the game",
+  Default = false,
+  Callback = function(v)
+    if v then
+        game:GetService("Lighting").FogEnd = 100000
+        game:GetService("Lighting").FogStart = 100000
+    else
+        game:GetService("Lighting").FogEnd = 5000
+        game:GetService("Lighting").FogStart = 0
+    end
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Fog Color",
+  Description = "Choose the fog color",
+  Options = {"Default", "Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+  Default = "Default",
+  Callback = function(Value)
+    setFogColor(Value)
+  end
+})
+
 VisualsTab:AddDropdown({
   Name = "Skyboxes",
   Description = "Choose your skybox",
-Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox"},
+Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox", "LUK Skybox", "LUK Members Skybox"},
   Default = "None",
   Callback = function(Value)
     setSkybox(Value)
