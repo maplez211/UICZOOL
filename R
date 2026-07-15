@@ -1,80 +1,55 @@
 -- UI Script Kayen's Panel | Locked Up Panel
-local Starlight = loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/starlight"))()
-local NebulaIcons = loadstring(game:HttpGet("https://raw.nebulasoftworks.xyz/nebula-icon-library-loader"))()
+local redzlib = loadstring(game:HttpGet("https://raw.githubusercontent.com/minhdepzai-v/LibraryRobloc/refs/heads/main/RedzLibrary.lua"))()
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-local Window = Starlight.CreateWindow({
-    Name = "Kayen's Panel | Locked Up",
-    RootFolder = "KayenPanel",
-    ConfigFolder = "KayenPanel/Configs"
+local Window = redzlib:MakeWindow({
+  Title = "Kayen's Panel | Locked Up Panel",
+  SubTitle = "by 2knw | Version 0.2.1" ,
+  SaveFolder = "LockedUp_Hub"
 })
 
-Window:CreateHomeTab({
-    SupportedExecutors = {},
-    DiscordInvite = "YqVunAY8J2",
-    Backdrop = 0,
-    IconStyle = 1,
-    Changelog = {
-        {
-            Title = "Kayen's Panel v0.2.0",
-            Date = "14th July 2025",
-            Description = "New Starlight UI!\n- Anti Kick added\n- Spectate Player added\n- Player Teleport improved",
-        }
-    }
+Window:AddMinimizeButton({
+    Button = { Image = "rbxassetid://121222457209872", BackgroundTransparency = 1 },
+    Corner = { CornerRadius = UDim.new(35, 1) },
 })
+
+-- ============ TABS ============
+local MainTab = Window:MakeTab({"Main", "settings"})
+local PlayersTab = Window:MakeTab({"Players", "user"})
+local VisualsTab = Window:MakeTab({"Visuals", "eye"})
+local AimbotTab = Window:MakeTab({"Aimbot", "crosshair"})
+local TeleportsTab = Window:MakeTab({"Teleports", "map-pin"})
+local ItemsTab = Window:MakeTab({"Items", "shopping-bag"})
+local GunModsTab = Window:MakeTab({"Gun Mods", "keyboard"})
+
+Window:SelectTab(MainTab)
 
 -- ============ MAIN TAB ============
-local MainSection = Window:CreateTabSection("Main")
-local MainTab = MainSection:CreateTab({
-    Name = "Main",
-    Icon = NebulaIcons:GetIcon('home', 'Material'),
-    Columns = 1,
-}, "MainTab")
+MainTab:AddDiscordInvite({
+    Name = "Kayen's Panel",
+    Description = "Join our Discord server for updates and support!",
+    Logo = "rbxassetid://121222457209872",
+    Invite = "https://discord.gg/YqVunAY8J2",  
+})
 
-local PlayerGroup = MainTab:CreateGroupbox({
-    Name = "Player",
-    Column = 1,
-}, "PlayerGroup")
+local MainSection = MainTab:AddSection({"Player"})
 
-PlayerGroup:CreateToggle({
-    Name = "Anti Kick",
-    CurrentValue = false,
-    Callback = function(v)
-        ANTI_KICK_ENABLED = v
-        if v then
-            for _, part in ipairs(workspace:GetDescendants()) do
-                if part.Name == "Part" and part.Anchored and part.Transparency >= 1 then
-                    part:Destroy()
-                end
-            end
-        end
-    end,
-}, "AntiKickToggle")
-
-PlayerGroup:CreateSlider({
-    Name = "Spinbot",
-    Range = {0, 250},
-    Increment = 1,
-    CurrentValue = 0,
-    Callback = function(Value)
-        SPINBOT_SPEED = Value
-    end,
-}, "SpinbotSlider")
+MainTab:AddSlider({
+  Name = "Spinbot",
+  Description = "Spins your character at the chosen speed.",
+  Min = 0,
+  Max = 250,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    SPINBOT_SPEED = Value
+  end
+})
 
 -- ============ PLAYERS TAB ============
-local PlayersSection = Window:CreateTabSection("Players")
-local PlayersTab = PlayersSection:CreateTab({
-    Name = "Players",
-    Icon = NebulaIcons:GetIcon('people', 'Material'),
-    Columns = 1,
-}, "PlayersTab")
-
-local TeleportGroup = PlayersTab:CreateGroupbox({
-    Name = "Teleport to Player",
-    Column = 1,
-}, "TeleportGroup")
+local PlayersSection = PlayersTab:AddSection({"Teleport to Player"})
 
 local playerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
@@ -83,12 +58,12 @@ for _, plr in ipairs(Players:GetPlayers()) do
     end
 end
 
-local playerDropdown = TeleportGroup:CreateDropdown({
-    Name = "Select Player",
+local playerDropdown = PlayersTab:AddDropdown({
+    Name = "Teleport to Player",
+    Description = "Select a player to teleport to them",
     Options = playerOptions,
-    CurrentOption = "Select a player...",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
+    Default = "Select a player...",
+    Callback = function(Value)
         if Value == "Select a player..." then return end
         local target = Players:FindFirstChild(Value)
         if target and target.Character then
@@ -100,8 +75,8 @@ local playerDropdown = TeleportGroup:CreateDropdown({
                 end
             end
         end
-    end,
-}, "PlayerDropdown")
+    end
+})
 
 _G.refreshPlayerDropdown = function()
     local options = {"Select a player..."}
@@ -113,12 +88,12 @@ _G.refreshPlayerDropdown = function()
     
     pcall(function() playerDropdown:Destroy() end)
     
-    playerDropdown = TeleportGroup:CreateDropdown({
-        Name = "Select Player",
+    playerDropdown = PlayersTab:AddDropdown({
+        Name = "Teleport to Player",
+        Description = "Select a player to teleport to them",
         Options = options,
-        CurrentOption = "Select a player...",
-        Callback = function(Options)
-            local Value = type(Options) == "table" and Options[1] or Options
+        Default = "Select a player...",
+        Callback = function(Value)
             if Value == "Select a player..." then return end
             local target = Players:FindFirstChild(Value)
             if target and target.Character then
@@ -130,24 +105,16 @@ _G.refreshPlayerDropdown = function()
                     end
                 end
             end
-        end,
-    }, "PlayerDropdown")
+        end
+    })
 end
 
-TeleportGroup:CreateButton({
-    Name = "Update Players List",
-    Callback = function()
-        if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
-    end,
-}, "UpdatePlayersBtn")
+PlayersTab:AddButton({"Update Players List", function()
+    if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
+end})
 
-local ViewGroup = PlayersTab:CreateGroupbox({
-    Name = "View Player",
-    Column = 1,
-}, "ViewGroup")
-
-local SPECTATE_PLAYER = nil
-local spectateConnection = nil
+-- ============ VIEW PLAYER SECTION ============
+local ViewSection = PlayersTab:AddSection({"View Player"})
 
 local viewPlayerOptions = {"Select a player..."}
 for _, plr in ipairs(Players:GetPlayers()) do
@@ -156,20 +123,24 @@ for _, plr in ipairs(Players:GetPlayers()) do
     end
 end
 
-local viewPlayerDropdown = ViewGroup:CreateDropdown({
-    Name = "Select Player",
+local SPECTATE_PLAYER = nil
+local spectateConnection = nil
+
+local viewPlayerDropdown = PlayersTab:AddDropdown({
+    Name = "View Player",
+    Description = "Select a player to spectate",
     Options = viewPlayerOptions,
-    CurrentOption = "Select a player...",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
+    Default = "Select a player...",
+    Callback = function(Value)
         if Value == "Select a player..." then return end
         SPECTATE_PLAYER = Value
-    end,
-}, "ViewPlayerDropdown")
+    end
+})
 
-ViewGroup:CreateToggle({
+PlayersTab:AddToggle({
     Name = "Spectate Player",
-    CurrentValue = false,
+    Description = "Toggle to spectate the selected player",
+    Default = false,
     Callback = function(v)
         if v and SPECTATE_PLAYER then
             local target = Players:FindFirstChild(SPECTATE_PLAYER)
@@ -196,360 +167,393 @@ ViewGroup:CreateToggle({
                 end
             end
         end
-    end,
-}, "SpectateToggle")
+    end
+})
 
-ViewGroup:CreateButton({
-    Name = "Update Players List",
-    Callback = function()
-        local options = {"Select a player..."}
-        for _, plr in ipairs(Players:GetPlayers()) do
-            if plr ~= player then
-                table.insert(options, plr.Name)
-            end
+PlayersTab:AddButton({"Update Players List", function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
         end
-        
-        pcall(function() viewPlayerDropdown:Destroy() end)
-        
-        viewPlayerDropdown = ViewGroup:CreateDropdown({
-            Name = "Select Player",
-            Options = options,
-            CurrentOption = "Select a player...",
-            Callback = function(Options)
-                local Value = type(Options) == "table" and Options[1] or Options
-                if Value == "Select a player..." then return end
-                SPECTATE_PLAYER = Value
-            end,
-        }, "ViewPlayerDropdown")
-    end,
-}, "UpdateViewPlayersBtn")
+    end
+    
+    pcall(function() viewPlayerDropdown:Destroy() end)
+    
+    viewPlayerDropdown = PlayersTab:AddDropdown({
+        Name = "View Player",
+        Description = "Select a player to spectate",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            SPECTATE_PLAYER = Value
+        end
+    })
+end})
 
 -- ============ AIMBOT TAB ============
-local AimbotSection = Window:CreateTabSection("Aimbot")
-local AimbotTab = AimbotSection:CreateTab({
-    Name = "Aimbot",
-    Icon = NebulaIcons:GetIcon('my_location', 'Material'),
-    Columns = 2,
-}, "AimbotTab")
+local AimbotSection = AimbotTab:AddSection({"Aimbot"})
 
-local AimbotGroup = AimbotTab:CreateGroupbox({
-    Name = "Aimbot",
-    Column = 1,
-}, "AimbotGroup")
+AimbotTab:AddToggle({
+  Name = "Aimbot",
+  Default = true,
+  Callback = function(v)
+    AIMBOT_ENABLED = v
+    if _G.fovCircle then _G.fovCircle.Visible = v end
+    if not v then game:GetService("UserInputService").MouseBehavior = Enum.MouseBehavior.Default end
+  end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Aimbot",
-    CurrentValue = true,
-    Callback = function(v)
-        AIMBOT_ENABLED = v
-        if _G.fovCircle then _G.fovCircle.Visible = v end
-        if not v then game:GetService("UserInputService").MouseBehavior = Enum.MouseBehavior.Default end
-    end,
-}, "AimbotToggle")
+AimbotTab:AddToggle({
+  Name = "Wanted Only",
+  Default = false,
+  Callback = function(v) WANTED_ONLY = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Wanted Only",
-    CurrentValue = false,
-    Callback = function(v) WANTED_ONLY = v end,
-}, "WantedToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Forcefield",
+  Default = true,
+  Callback = function(v) IGNORE_FORCEFIELD = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Ignore Friends",
-    CurrentValue = true,
-    Callback = function(v) IGNORE_FRIENDS = v end,
-}, "FriendsToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Friends",
+  Default = true,
+  Callback = function(v) IGNORE_FRIENDS = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Ignore Inmates",
-    CurrentValue = false,
-    Callback = function(v) IGNORE_INMATES = v end,
-}, "InmatesToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Inmates",
+  Default = false,
+  Callback = function(v) IGNORE_INMATES = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Ignore Guards",
-    CurrentValue = false,
-    Callback = function(v) IGNORE_GUARDS = v end,
-}, "GuardsToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Guards",
+  Default = false,
+  Callback = function(v) IGNORE_GUARDS = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Ignore Criminals",
-    CurrentValue = false,
-    Callback = function(v) IGNORE_CRIMINALS = v end,
-}, "CriminalsToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Criminals",
+  Default = false,
+  Callback = function(v) IGNORE_CRIMINALS = v end
+})
 
-AimbotGroup:CreateToggle({
-    Name = "Ignore Warden",
-    CurrentValue = false,
-    Callback = function(v) IGNORE_WARDEN = v end,
-}, "WardenToggle")
+AimbotTab:AddToggle({
+  Name = "Ignore Warden",
+  Default = false,
+  Callback = function(v) IGNORE_WARDEN = v end
+})
 
-AimbotGroup:CreateInput({
-    Name = "Target On",
-    CurrentValue = "",
-    PlaceholderText = "Player name...",
-    Callback = function(Text)
-        if Text == "" then
-            TARGET_ON_PLAYER = nil
-        else
-            local partial = Text:lower()
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= player and plr.Name:lower():find(partial, 1, true) then
-                    TARGET_ON_PLAYER = plr.Name
-                    return
-                end
-            end
-            TARGET_ON_PLAYER = nil
-        end
-    end,
-}, "TargetInput")
+-- ============ TARGET ON SECTION ============
+local TargetSection = AimbotTab:AddSection({"Target On"})
 
-AimbotGroup:CreateSlider({
-    Name = "Smooth",
-    Range = {1, 100},
-    Increment = 1,
-    CurrentValue = 80,
-    Callback = function(Value) SMOOTHNESS = Value / 100 end,
-}, "SmoothSlider")
-
-AimbotGroup:CreateSlider({
-    Name = "Angle Offset",
-    Range = {0, 25},
-    Increment = 0.5,
-    CurrentValue = 10.5,
-    Callback = function(Value) AIM_ANGLE_OFFSET = Value end,
-}, "AngleSlider")
-
-local FOVGroup = AimbotTab:CreateGroupbox({
-    Name = "FOV",
-    Column = 2,
-}, "FOVGroup")
-
-FOVGroup:CreateToggle({
-    Name = "Hide FOV Circle",
-    CurrentValue = false,
-    Callback = function(v)
-        HIDE_FOV_CIRCLE = v
-        if _G.toggleFOVCircle then
-            _G.toggleFOVCircle(v)
-        end
-    end,
-}, "HideFOVToggle")
-
-FOVGroup:CreateSlider({
-    Name = "FOV Size",
-    Range = {30, 500},
-    Increment = 10,
-    CurrentValue = 100,
-    Callback = function(Value)
-        FOV_RADIUS = Value
-        if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
-    end,
-}, "FOVSizeSlider")
-
--- ============ GUN MODS TAB ============
-local GunModsSection = Window:CreateTabSection("Gun Mods")
-local GunModsTab = GunModsSection:CreateTab({
-    Name = "Gun Mods",
-    Icon = NebulaIcons:GetIcon('build', 'Material'),
-    Columns = 1,
-}, "GunModsTab")
-
-local ModsGroup = GunModsTab:CreateGroupbox({
-    Name = "Weapons Modifications",
-    Column = 1,
-}, "ModsGroup")
-
-ModsGroup:CreateSlider({
-    Name = "Firerate",
-    Range = {0, 0.1},
-    Increment = 0.01,
-    CurrentValue = 0,
-    Callback = function(Value)
-        setGunMod("FireRate", Value)
-    end,
-}, "FirerateSlider")
-
-ModsGroup:CreateSlider({
-    Name = "Spread",
-    Range = {0, 250},
-    Increment = 1,
-    CurrentValue = 0,
-    Callback = function(Value)
-        setGunMod("Spread", Value)
-    end,
-}, "SpreadSlider")
-
-ModsGroup:CreateSlider({
-    Name = "Range",
-    Range = {0, 1000},
-    Increment = 1,
-    CurrentValue = 0,
-    Callback = function(Value)
-        setGunMod("Range", Value)
-    end,
-}, "RangeSlider")
-
-ModsGroup:CreateSlider({
-    Name = "Max Ammo",
-    Range = {0, 10000},
-    Increment = 1,
-    CurrentValue = 0,
-    Callback = function(Value)
-        setGunMod("MaxAmmo", Value)
-    end,
-}, "MaxAmmoSlider")
-
-ModsGroup:CreateSlider({
-    Name = "Current Ammo",
-    Range = {0, 10000},
-    Increment = 1,
-    CurrentValue = 0,
-    Callback = function(Value)
-        setGunMod("CurrentAmmo", Value)
-    end,
-}, "CurrentAmmoSlider")
-
-ModsGroup:CreateToggle({
-    Name = "AutoFire",
-    CurrentValue = false,
-    Callback = function(Value)
-        setGunMod("AutoFire", Value)
-    end,
-}, "AutoFireToggle")
-
--- ============ VISUALS TAB ============
-local VisualsSection = Window:CreateTabSection("Visuals")
-local VisualsTab = VisualsSection:CreateTab({
-    Name = "Visuals",
-    Icon = NebulaIcons:GetIcon('visibility', 'Material'),
-    Columns = 2,
-}, "VisualsTab")
-
-local VisualGroup = VisualsTab:CreateGroupbox({
-    Name = "Visual Options",
-    Column = 1,
-}, "VisualGroup")
-
-VisualGroup:CreateToggle({
-    Name = "ESP",
-    CurrentValue = false,
-    Callback = function(v)
-        ESP_ENABLED = v
-        if _G.refreshESP then _G.refreshESP() end
-    end,
-}, "ESPToggle")
-
-VisualGroup:CreateToggle({
-    Name = "Hide ESP Names",
-    CurrentValue = false,
-    Callback = function(v)
-        ESP_NAMES_ENABLED = not v
-        if _G.refreshESP then _G.refreshESP() end
-    end,
-}, "HideESPToggle")
-
-VisualGroup:CreateToggle({
-    Name = "Hide Tag",
-    CurrentValue = false,
-    Callback = function(v)
-        HIDE_TAG_ENABLED = v
-        updateTagVisibility()
-    end,
-}, "HideTagToggle")
-
-local CustomGroup = VisualsTab:CreateGroupbox({
-    Name = "Customization",
-    Column = 2,
-}, "CustomGroup")
-
-CustomGroup:CreateDropdown({
-    Name = "Skyboxes",
-    Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox"},
-    CurrentOption = "None",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
-        setSkybox(Value)
-    end,
-}, "SkyboxDropdown")
-
-CustomGroup:CreateDropdown({
-    Name = "Bullet Color",
-    Options = {"Default", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Black", "White", "Rainbow"},
-    CurrentOption = "Default",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
-        setBulletColor(Value)
-    end,
-}, "BulletColorDropdown")
-
-CustomGroup:CreateDropdown({
-    Name = "Weapon Skins",
-    Options = {"Default", "Magma", "White Neon", "Purple Emo", "Bat Style", "Creepy Eyes", "Purple Pattern", "Trippy", "Rainbow", "Red Pattern", "Bizarre Force", "Golden"},
-    CurrentOption = "Default",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
-        setWeaponSkin(Value)
-    end,
-}, "SkinDropdown")
-
-CustomGroup:CreateDropdown({
-    Name = "Shot Sound",
-    Options = {"Default", "CS 1.6 AK-47", "Shine Shot", "Electric Shot", "FAHH", "Bow Shot", "Laser Shot", "Pew", "Meow", "Silenced Shot", "M16 Shot"},
-    CurrentOption = "Default",
-    Callback = function(Options)
-        local Value = type(Options) == "table" and Options[1] or Options
-        setShotSound(Value)
-    end,
-}, "ShotSoundDropdown")
-
--- ============ ITEMS TAB ============
-local ItemsSection = Window:CreateTabSection("Items")
-local ItemsTab = ItemsSection:CreateTab({
-    Name = "Items",
-    Icon = NebulaIcons:GetIcon('shopping_bag', 'Material'),
-    Columns = 2,
-}, "ItemsTab")
-
-local ItemsGroup = ItemsTab:CreateGroupbox({
-    Name = "Items",
-    Column = 1,
-}, "ItemsGroup")
-
-ItemsGroup:CreateButton({
-    Name = "Keycard",
-    Callback = function() _G.grabItem("Keycard") end,
-}, "KeycardBtn")
-
-ItemsGroup:CreateButton({
-    Name = "Medkit",
-    Callback = function() _G.grabItem("Medkit") end,
-}, "MedkitBtn")
-
-local WeaponsGroup = ItemsTab:CreateGroupbox({
-    Name = "Weapons",
-    Column = 2,
-}, "WeaponsGroup")
-
-local weapons = {"Desert Eagle", "UZI", "Scar", "M16", "SVD", "AK-47", "DB", "M82", "AUG", "IA2", "M9"}
-for _, weapon in ipairs(weapons) do
-    WeaponsGroup:CreateButton({
-        Name = weapon,
-        Callback = function() _G.grabItem(weapon) end,
-    }, weapon .. "Btn")
+local targetOptions = {"None"}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(targetOptions, plr.Name)
+    end
 end
 
--- ============ TELEPORTS TAB ============
-local TeleportsSection = Window:CreateTabSection("Teleports")
-local TeleportsTab = TeleportsSection:CreateTab({
-    Name = "Teleports",
-    Icon = NebulaIcons:GetIcon('map', 'Material'),
-    Columns = 1,
-}, "TeleportsTab")
+local targetDropdown = AimbotTab:AddDropdown({
+    Name = "Target On",
+    Description = "Select a player to target",
+    Options = targetOptions,
+    Default = "None",
+    Callback = function(Value)
+        if Value == "None" then
+            TARGET_ON_PLAYER = nil
+        else
+            TARGET_ON_PLAYER = Value
+        end
+    end
+})
 
-local TeleportsGroup = TeleportsTab:CreateGroupbox({
-    Name = "Teleports",
-    Column = 1,
-}, "TeleportsGroup")
+AimbotTab:AddButton({"Reset Target", function()
+    TARGET_ON_PLAYER = nil
+    pcall(function() targetDropdown:Destroy() end)
+    
+    local newOptions = {"None"}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(newOptions, plr.Name)
+        end
+    end
+    
+    targetDropdown = AimbotTab:AddDropdown({
+        Name = "Target On",
+        Description = "Select a player to target",
+        Options = newOptions,
+        Default = "None",
+        Callback = function(Value)
+            if Value == "None" then
+                TARGET_ON_PLAYER = nil
+            else
+                TARGET_ON_PLAYER = Value
+            end
+        end
+    })
+end})
+
+AimbotTab:AddSlider({
+  Name = "Smooth",
+  Min = 1,
+  Max = 100,
+  Increase = 1,
+  Default = 80,
+  Callback = function(Value) SMOOTHNESS = Value / 100 end
+})
+
+AimbotTab:AddSlider({
+  Name = "Angle Offset",
+  Min = 0,
+  Max = 25,
+  Increase = 0.5,
+  Default = 10.5,
+  Callback = function(Value) AIM_ANGLE_OFFSET = Value end
+})
+
+local FOVSection = AimbotTab:AddSection({"FOV"})
+
+AimbotTab:AddDropdown({
+  Name = "FOV Color",
+  Description = "Choose the FOV circle color",
+  Options = {"Black", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "White"},
+  Default = "Black",
+  Callback = function(Value)
+    setFOVColor(Value)
+  end
+})
+
+AimbotTab:AddToggle({
+  Name = "Hide FOV Circle",
+  Default = false,
+  Callback = function(v)
+    HIDE_FOV_CIRCLE = v
+    if _G.toggleFOVCircle then
+      _G.toggleFOVCircle(v)
+    end
+  end
+})
+
+AimbotTab:AddSlider({
+  Name = "FOV Size",
+  Min = 30,
+  Max = 500,
+  Increase = 10,
+  Default = 100,
+  Callback = function(Value)
+    FOV_RADIUS = Value
+    if _G.fovCircle then _G.fovCircle.Size = UDim2.new(0, Value*2, 0, Value*2) end
+  end
+})
+
+-- ============ GUN MODS TAB ============
+local FirerateSection = GunModsTab:AddSection({"Weapons Modifications."})
+
+GunModsTab:AddSlider({
+  Name = "Firerate",
+  Description = "Changes weapon's firerate.",
+  Min = 0,
+  Max = 0.1,
+  Increase = 0.01,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("FireRate", Value)
+  end
+})
+
+GunModsTab:AddSlider({
+  Name = "Spread",
+  Description = "Changes weapon's spread.",
+  Min = 0,
+  Max = 250,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("Spread", Value)
+  end
+})
+
+GunModsTab:AddSlider({
+  Name = "Range",
+  Description = "Changes weapon's range.",
+  Min = 0,
+  Max = 1000,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("Range", Value)
+  end
+})
+
+GunModsTab:AddSlider({
+  Name = "MaxAmmo",
+  Description = "Changes weapon's max ammo.",
+  Min = 0,
+  Max = 10000,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("MaxAmmo", Value)
+  end
+})
+
+GunModsTab:AddSlider({
+  Name = "CurrentAmmo",
+  Description = "Changes weapon's current ammo.",
+  Min = 0,
+  Max = 10000,
+  Increase = 1,
+  Default = 0,
+  Callback = function(Value)
+    setGunMod("CurrentAmmo", Value)
+  end
+})
+
+GunModsTab:AddToggle({
+  Name = "AutoFire",
+  Description = "Enables automatic fire.",
+  Default = false,
+  Callback = function(Value)
+    setGunMod("AutoFire", Value)
+  end
+})
+
+-- ============ VISUALS TAB ============
+local VisualsSection = VisualsTab:AddSection({"Visual Options"})
+
+VisualsTab:AddToggle({
+  Name = "ESP",
+  Default = false,
+  Callback = function(v)
+    ESP_ENABLED = v
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
+
+VisualsTab:AddToggle({
+  Name = "Hide ESP Names",
+  Description = "Hides the names above players when ESP is active",
+  Default = false,
+  Callback = function(v)
+    ESP_NAMES_ENABLED = not v  
+    if _G.refreshESP then _G.refreshESP() end
+  end
+})
+
+VisualsTab:AddToggle({
+  Name = "Hide Tag",
+  Default = false,
+  Callback = function(v)
+    HIDE_TAG_ENABLED = v
+    updateTagVisibility()
+  end
+})
+
+local CustomizationSection = VisualsTab:AddSection({"Customization"})
+
+VisualsTab:AddDropdown({
+  Name = "Skyboxes",
+  Description = "Choose your skybox",
+Options = {"None", "Gray Skybox", "2knw & Donk666 Skybox", "Snow Skybox", "Cartoon Skybox", "Lince Skybox", "Red Skybox", "Slam Skybox", "Green Eyeball Skybox"},
+  Default = "None",
+  Callback = function(Value)
+    setSkybox(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "BulletColor",
+  Description = "Choose your bullet color",
+  Options = {"Default", "Red", "Green", "Blue", "Yellow", "Purple", "Cyan", "Orange", "Pink", "Black", "White", "Rainbow"},
+  Default = "Default",
+  Callback = function(Value)
+    setBulletColor(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Weapon Skins",
+  Description = "Choose your weapon skin",
+  Options = {"Default", "Magma", "White Neon", "Purple Emo", "Bat Style", "Creepy Eyes", "Purple Pattern", "Trippy", "Rainbow", "Red Pattern", "Bizarre Force", "Golden"},
+  Default = "Default",
+  Callback = function(Value)
+    setWeaponSkin(Value)
+  end
+})
+
+VisualsTab:AddDropdown({
+  Name = "Shot Sound",
+  Description = "Choose your weapon shot sound",
+  Options = {"Default", "CS 1.6 AK-47", "Shine Shot", "Electric Shot", "FAHH", "Bow Shot", "Laser Shot", "Pew", "Meow", "Silenced Shot", "M16 Shot"},
+  Default = "Default",
+  Callback = function(Value)
+    setShotSound(Value)
+  end
+})
+
+-- ============ ITEMS TAB ============
+local ItemsSection = ItemsTab:AddSection({"Items"})
+
+ItemsTab:AddButton({"Keycard", function()
+    _G.grabItem("Keycard")
+end})
+
+ItemsTab:AddButton({"Medkit", function()
+    _G.grabItem("Medkit")
+end})
+
+local WeaponsSection = ItemsTab:AddSection({"Weapons"})
+
+ItemsTab:AddButton({"Desert Eagle", function()
+    _G.grabItem("Desert Eagle")
+end})
+
+ItemsTab:AddButton({"UZI", function()
+    _G.grabItem("UZI")
+end})
+
+ItemsTab:AddButton({"Scar", function()
+    _G.grabItem("Scar")
+end})
+
+ItemsTab:AddButton({"M16", function()
+    _G.grabItem("M16")
+end})
+
+ItemsTab:AddButton({"SVD", function()
+    _G.grabItem("SVD")
+end})
+
+ItemsTab:AddButton({"AK-47", function()
+    _G.grabItem("AK-47")
+end})
+
+ItemsTab:AddButton({"DB", function()
+    _G.grabItem("DB")
+end})
+
+ItemsTab:AddButton({"M82", function()
+    _G.grabItem("M82")
+end})
+
+ItemsTab:AddButton({"AUG", function()
+    _G.grabItem("AUG")
+end})
+
+ItemsTab:AddButton({"IA2", function()
+    _G.grabItem("IA2")
+end})
+
+ItemsTab:AddButton({"M9", function()
+    _G.grabItem("M9")
+end})
+
+-- ============ TELEPORTS TAB ============
+local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
 
 local teleports = {
   {"Escape the Prison", Vector3.new(2025, 95, 2763)},
@@ -590,21 +594,10 @@ local teleports = {
 }
 
 for _, tp in ipairs(teleports) do
-    local tpName = tp[1]
-    local tpPos = tp[2]
-    TeleportsGroup:CreateButton({
-        Name = tpName,
-        Callback = function()
-            local c = player.Character
-            if c and c:FindFirstChild("HumanoidRootPart") then
-                c.HumanoidRootPart.CFrame = CFrame.new(tpPos)
-            end
-        end,
-    }, tpName .. "Btn")
+  TeleportsTab:AddButton({tp[1], function()
+    local c = player.Character
+    if c and c:FindFirstChild("HumanoidRootPart") then
+      c.HumanoidRootPart.CFrame = CFrame.new(tp[2])
+    end
+  end})
 end
-
-Starlight.Notification({
-    Title = "Kayen's Panel",
-    Content = "Script executado com sucesso!",
-    Duration = 3
-}, "Loaded")
