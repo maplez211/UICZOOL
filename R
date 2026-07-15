@@ -5,7 +5,7 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
-local Window = Starlight:Window({
+local Window = Starlight.CreateWindow({
     Name = "Kayen's Panel | Locked Up",
     RootFolder = "KayenPanel",
     ConfigFolder = "KayenPanel/Configs"
@@ -588,3 +588,9 @@ for _, tp in ipairs(teleports) do
         end,
     }, tpName .. "Btn")
 end
+
+Starlight.Notification({
+    Title = "Kayen's Panel",
+    Content = "Script executado com sucesso!",
+    Duration = 3
+}, "Loaded")
