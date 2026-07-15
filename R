@@ -5,6 +5,20 @@ local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
+Window:CreateHomeTab({
+    SupportedExecutors = {},
+    DiscordInvite = "YqVunAY8J2",
+    Backdrop = 0,
+    IconStyle = 1,
+    Changelog = {
+        {
+            Title = "Kayen's Panel v0.2.0",
+            Date = "14th July 2025",
+            Description = "New Starlight UI!\n- Anti Kick added\n- Spectate Player added\n- Player Teleport improved",
+        }
+    }
+})
+
 local Window = Starlight.CreateWindow({
     Name = "Kayen's Panel | Locked Up",
     RootFolder = "KayenPanel",
