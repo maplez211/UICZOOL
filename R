@@ -508,6 +508,10 @@ ItemsTab:AddButton({"Scar", function()
     _G.grabItem("Scar")
 end})
 
+ItemsTab:AddButton({"Remington 870", function()
+    _G.grabItem("Remington 870")
+end})
+
 ItemsTab:AddButton({"M16", function()
     _G.grabItem("M16")
 end})
