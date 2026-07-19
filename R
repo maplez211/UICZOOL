@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Kayen's Panel | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.2.2",
+  SubTitle = "by 2knw | Version 0.2.3",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -51,47 +51,23 @@ MainTab:AddSlider({
 -- ============ PLAYERS TAB ============
 local PlayersSection = PlayersTab:AddSection({"Teleport to Player"})
 
-local playerOptions = {"Select a player..."}
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr ~= player then
-        table.insert(playerOptions, plr.Name)
-    end
-end
-
-local playerDropdown = PlayersTab:AddDropdown({
-    Name = "Teleport to Player",
-    Description = "Select a player to teleport to them",
-    Options = playerOptions,
-    Default = "Select a player...",
-    Callback = function(Value)
-        if Value == "Select a player..." then return end
-        local target = Players:FindFirstChild(Value)
-        if target and target.Character then
-            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                local c = player.Character
-                if c and c:FindFirstChild("HumanoidRootPart") then
-                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
-                end
-            end
-        end
-    end
-})
-
-_G.refreshPlayerDropdown = function()
-    local options = {"Select a player..."}
+local function buildPlayerOptions()
+    local opts = {"Select a player..."}
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= player then
-            table.insert(options, plr.Name)
+            table.insert(opts, plr.Name)
         end
     end
+    return opts
+end
+
+local function createTeleportDropdown()
+    local opts = buildPlayerOptions()
     
-    pcall(function() playerDropdown:Destroy() end)
-    
-    playerDropdown = PlayersTab:AddDropdown({
+    local dropdown = PlayersTab:AddDropdown({
         Name = "Teleport to Player",
         Description = "Select a player to teleport to them",
-        Options = options,
+        Options = opts,
         Default = "Select a player...",
         Callback = function(Value)
             if Value == "Select a player..." then return end
@@ -107,35 +83,39 @@ _G.refreshPlayerDropdown = function()
             end
         end
     })
+    return dropdown
 end
 
+local playerDropdown = createTeleportDropdown()
+
 PlayersTab:AddButton({"Update Players List", function()
-    if _G.refreshPlayerDropdown then _G.refreshPlayerDropdown() end
+    pcall(function() playerDropdown:Destroy() end)
+    playerDropdown = createTeleportDropdown()
 end})
 
 -- ============ VIEW PLAYER SECTION ============
 local ViewSection = PlayersTab:AddSection({"View Player"})
 
-local viewPlayerOptions = {"Select a player..."}
-for _, plr in ipairs(Players:GetPlayers()) do
-    if plr ~= player then
-        table.insert(viewPlayerOptions, plr.Name)
-    end
-end
-
 local SPECTATE_PLAYER = nil
 local spectateConnection = nil
 
-local viewPlayerDropdown = PlayersTab:AddDropdown({
-    Name = "View Player",
-    Description = "Select a player to spectate",
-    Options = viewPlayerOptions,
-    Default = "Select a player...",
-    Callback = function(Value)
-        if Value == "Select a player..." then return end
-        SPECTATE_PLAYER = Value
-    end
-})
+local function createViewDropdown()
+    local opts = buildPlayerOptions()
+    
+    local dropdown = PlayersTab:AddDropdown({
+        Name = "View Player",
+        Description = "Select a player to spectate",
+        Options = opts,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            SPECTATE_PLAYER = Value
+        end
+    })
+    return dropdown
+end
+
+local viewPlayerDropdown = createViewDropdown()
 
 PlayersTab:AddToggle({
     Name = "Spectate Player",
@@ -171,25 +151,8 @@ PlayersTab:AddToggle({
 })
 
 PlayersTab:AddButton({"Update Players List", function()
-    local options = {"Select a player..."}
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player then
-            table.insert(options, plr.Name)
-        end
-    end
-    
     pcall(function() viewPlayerDropdown:Destroy() end)
-    
-    viewPlayerDropdown = PlayersTab:AddDropdown({
-        Name = "View Player",
-        Description = "Select a player to spectate",
-        Options = options,
-        Default = "Select a player...",
-        Callback = function(Value)
-            if Value == "Select a player..." then return end
-            SPECTATE_PLAYER = Value
-        end
-    })
+    viewPlayerDropdown = createViewDropdown()
 end})
 
 -- ============ AIMBOT TAB ============
@@ -583,10 +546,17 @@ local TeleportsSection = TeleportsTab:AddSection({"Teleports"})
 local teleports = {
   {"Escape the Prison", Vector3.new(2025, 95, 2763)},
   {"Admin Room", Vector3.new(825, 127, 3762)},
-  {"Cafeteria", Vector3.new(1958, 156, 2684)},
+  {"Nexus 1", Vector3.new(1894, 156, 2822)},
+  {"Nexus 2", Vector3.new(1993, 155, 2669)},
+  {"Cells 1", Vector3.new(1942, 156, 2844},
+  {"Cells 2", Vector3.new(1942, 192, 2713)},
+  {"Stairs", Vector3.new(2014, 180, 2831)},
+  {"Chairs Room", Vector3.new(2033, 156, 2738)},
   {"Crafting", Vector3.new(1976, 156, 2822)},
+  {"Cafeteria", Vector3.new(1958, 156, 2684)},
   {"Kitchen", Vector3.new(1895, 158, 2659)},
   {"Armory 1 (Prison)", Vector3.new(1841, 165, 2674)},
+  {"Armory 2 (Prison)", Vector3.new(2236, 165, 2719)},
   {"Break Room 1", Vector3.new(1820, 156, 2688)},
   {"Break Room 2", Vector3.new(1801, 156, 2654)},
   {"Warden Room", Vector3.new(1700, 156, 2810)},
@@ -596,10 +566,7 @@ local teleports = {
   {"Prison Tower 2", Vector3.new(1849, 186, 3006)},
   {"Front Yard", Vector3.new(1848, 154, 2897)},
   {"Back Yard", Vector3.new(2051, 154, 2844)},
-  {"Cells 1", Vector3.new(2035, 156, 2734)},
-  {"Cells 2", Vector3.new(1942, 192, 2713)},
   {"Sewage", Vector3.new(1944, 136, 2557)},
-  {"Armory 2 (Prison)", Vector3.new(2236, 165, 2719)},
   {"Hall 1", Vector3.new(2259, 155, 2685)},
   {"Back Entrance", Vector3.new(2363, 155, 2718)},
   {"Lootboxes Area", Vector3.new(2325, 156, 2908)},
@@ -607,15 +574,18 @@ local teleports = {
   {"Criminal Base 2", Vector3.new(57, 135, 870)},
   {"Criminal Base 3", Vector3.new(1589, 76, 1369)},
   {"Armory (City)", Vector3.new(1449, 67, 1530)},
-  {"Wood House (DB and Desert Eagle)", Vector3.new(1173, 213, 3309)},
-  {"Beach (Agent Vest)", Vector3.new(-189, 115, 1762)},
-  {"Bell Tower (M82)", Vector3.new(762, 173, 2307)},
+  {"Statue", Vector3.new(654, 98, 1474)},
+  {"Neighbourhood", Vector3.new(872, 67, 955)},
+  {"Metro Station", Vector3.new(214, 87, 1619)},
+  {"Wood House", Vector3.new(1173, 213, 3309)},
+  {"Beach", Vector3.new(-189, 115, 1762)},
+  {"Bell Tower", Vector3.new(762, 173, 2307)},
   {"Empty Grocery", Vector3.new(503, 110, 2085)},
-  {"Empty Building (DB)", Vector3.new(768, 110, 2398)},
+  {"Empty Building", Vector3.new(768, 110, 2398)},
   {"Gym", Vector3.new(247, 110, 1729)},
   {"Walpark", Vector3.new(397, 110, 1931)},
   {"Motel", Vector3.new(206, 142, 989)},
-  {"Keycard", Vector3.new(937, 68, 910)},
+  {"Keycard House", Vector3.new(937, 68, 910)},
 }
 
 for _, tp in ipairs(teleports) do
