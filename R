@@ -548,7 +548,7 @@ local teleports = {
   {"Admin Room", Vector3.new(825, 127, 3762)},
   {"Nexus 1", Vector3.new(1894, 156, 2822)},
   {"Nexus 2", Vector3.new(1993, 155, 2669)},
-  {"Cells 1", Vector3.new(1942, 156, 2844},
+  {"Cells 1", Vector3.new(1942, 156, 2844)},
   {"Cells 2", Vector3.new(1942, 192, 2713)},
   {"Stairs", Vector3.new(2014, 180, 2831)},
   {"Chairs Room", Vector3.new(2033, 156, 2738)},
