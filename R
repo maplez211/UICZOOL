@@ -6,7 +6,7 @@ local RunService = game:GetService("RunService")
 
 local Window = redzlib:MakeWindow({
   Title = "Kayen's Panel | Locked Up Panel",
-  SubTitle = "by 2knw | Version 0.2.3",
+  SubTitle = "by 2knw | Version 0.2.4",
   SaveFolder = "LockedUp_Hub"
 })
 
@@ -51,23 +51,47 @@ MainTab:AddSlider({
 -- ============ PLAYERS TAB ============
 local PlayersSection = PlayersTab:AddSection({"Teleport to Player"})
 
-local function buildPlayerOptions()
-    local opts = {"Select a player..."}
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player then
-            table.insert(opts, plr.Name)
-        end
+local playerOptions = {"Select a player..."}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(playerOptions, plr.Name)
     end
-    return opts
 end
 
-local function createTeleportDropdown()
-    local opts = buildPlayerOptions()
+local playerDropdown = PlayersTab:AddDropdown({
+    Name = "Teleport to Player",
+    Description = "Select a player to teleport to them",
+    Options = playerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        local target = Players:FindFirstChild(Value)
+        if target and target.Character then
+            local hrp = target.Character:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                local c = player.Character
+                if c and c:FindFirstChild("HumanoidRootPart") then
+                    c.HumanoidRootPart.CFrame = CFrame.new(hrp.Position + Vector3.new(0, 3, 0))
+                end
+            end
+        end
+    end
+})
+
+PlayersTab:AddButton({"Update Players List", function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
     
-    local dropdown = PlayersTab:AddDropdown({
+    pcall(function() playerDropdown:Destroy() end)
+    
+    playerDropdown = PlayersTab:AddDropdown({
         Name = "Teleport to Player",
         Description = "Select a player to teleport to them",
-        Options = opts,
+        Options = options,
         Default = "Select a player...",
         Callback = function(Value)
             if Value == "Select a player..." then return end
@@ -83,39 +107,31 @@ local function createTeleportDropdown()
             end
         end
     })
-    return dropdown
-end
-
-local playerDropdown = createTeleportDropdown()
-
-PlayersTab:AddButton({"Update Players List", function()
-    pcall(function() playerDropdown:Destroy() end)
-    playerDropdown = createTeleportDropdown()
 end})
 
 -- ============ VIEW PLAYER SECTION ============
 local ViewSection = PlayersTab:AddSection({"View Player"})
 
+local viewPlayerOptions = {"Select a player..."}
+for _, plr in ipairs(Players:GetPlayers()) do
+    if plr ~= player then
+        table.insert(viewPlayerOptions, plr.Name)
+    end
+end
+
 local SPECTATE_PLAYER = nil
 local spectateConnection = nil
 
-local function createViewDropdown()
-    local opts = buildPlayerOptions()
-    
-    local dropdown = PlayersTab:AddDropdown({
-        Name = "View Player",
-        Description = "Select a player to spectate",
-        Options = opts,
-        Default = "Select a player...",
-        Callback = function(Value)
-            if Value == "Select a player..." then return end
-            SPECTATE_PLAYER = Value
-        end
-    })
-    return dropdown
-end
-
-local viewPlayerDropdown = createViewDropdown()
+local viewPlayerDropdown = PlayersTab:AddDropdown({
+    Name = "View Player",
+    Description = "Select a player to spectate",
+    Options = viewPlayerOptions,
+    Default = "Select a player...",
+    Callback = function(Value)
+        if Value == "Select a player..." then return end
+        SPECTATE_PLAYER = Value
+    end
+})
 
 PlayersTab:AddToggle({
     Name = "Spectate Player",
@@ -151,8 +167,25 @@ PlayersTab:AddToggle({
 })
 
 PlayersTab:AddButton({"Update Players List", function()
+    local options = {"Select a player..."}
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= player then
+            table.insert(options, plr.Name)
+        end
+    end
+    
     pcall(function() viewPlayerDropdown:Destroy() end)
-    viewPlayerDropdown = createViewDropdown()
+    
+    viewPlayerDropdown = PlayersTab:AddDropdown({
+        Name = "View Player",
+        Description = "Select a player to spectate",
+        Options = options,
+        Default = "Select a player...",
+        Callback = function(Value)
+            if Value == "Select a player..." then return end
+            SPECTATE_PLAYER = Value
+        end
+    })
 end})
 
 -- ============ AIMBOT TAB ============
